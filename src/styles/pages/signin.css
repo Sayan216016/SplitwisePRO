@@ -24,6 +24,7 @@
   position: relative;
   z-index: 1;
 }
+.signin__google-icon { flex-shrink: 0; }
 .signin__theme { position: absolute; top: var(--s-md); right: var(--s-md); }
 .signin__hero { padding: var(--s-section); color: var(--on-primary); }
 .signin__title { font-size: 52px; line-height: 1.15; color: var(--on-primary); margin: var(--s-xxl) 0 var(--s-md); }
