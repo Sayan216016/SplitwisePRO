@@ -1,7 +1,10 @@
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 220px)); gap: var(--s-sm); }
 .stat { display: grid; gap: 2px; background: var(--canvas); color: var(--muted); border-radius: var(--r-lg); padding: var(--s-sm) var(--s-md); }
-.stat strong { font-size: 20px; }
+.stat strong { font-size: 20px; color: var(--ink); }
+.stat strong.pos { color: var(--primary); }
+.stat strong.neg { color: var(--error); }
 .stat--dark { background: var(--primary-deep); color: var(--on-primary); }
+.stat--dark strong { color: var(--on-primary); }
 .empty--compact { padding: var(--s-lg) 0; }
 
 .friend-hero { display: flex; align-items: center; gap: var(--s-lg); }

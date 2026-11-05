@@ -12,6 +12,17 @@ Read this first in a new conversation. Architecture lives in `architecture.md`, 
 - Dark mode toggle. Deploy: GitHub Actions → GitHub Pages, Firebase config from GitHub Secrets.
 - `npm test` covers split math + debt simplification (`src/utils/money.test.js`).
 
+## Session 2 — mobile / UX pass
+
+- **Header:** Sign out is a compact pill (avatar · name · divider · "Sign out"); name hidden ≤767px, header tightened ≤424px.
+- **Compact hero bands** on home / group / friend (smaller padding + title). Home: no "Dashboard" eyebrow; "Hi, X" shares a row with **+ Add expense** and **Create group** (wraps below on mobile); stats are one row of 3 slim cards at every width.
+- **Add expense from anywhere:** `openExpenseModal` takes `groups` (choosable, shown as chips) or just `group` (locked, shown as a static label). Group is the first field; Paid by / Split are hidden until a group is picked and redraw per group. `onSave(data, group)` gets the chosen group.
+  - Home: all groups → after save, navigates to that group. Friend page: new Add expense button, shared groups only → stays on friend page. Group page / editing: locked.
+- **← Dashboard** button replaces the breadcrumb on group and friend pages (breadcrumb CSS removed).
+- Fixed ≤424px `.container` shorthand wiping `.page__body` top padding (now `padding-inline`).
+- Sign-in copy no longer mentions ₹ (tagline + background coins).
+- **Link previews:** Open Graph / Twitter tags in `index.html`; image at `public/og-image.png` (1200×630, rendered from `public/og-image.svg` — WhatsApp/Facebook don't accept SVG). Regenerating the PNG needs resvg + static Montserrat TTFs (not a project dependency).
+
 ## Product decisions (chosen by user)
 
 | Topic | Decision |
@@ -54,7 +65,10 @@ groups/{gid}/activity/{aid} { groupId, groupName, memberIds[], actorId, actorNam
 - `src/main.js` — router + `mountSignIn` / `mountHome` / `mountGroup`.
 - `src/services/db.js` — all Firestore I/O; `auth.js` — sign-in + post-login profile/invite claim.
 - `src/views/` — `signin.js`, `home.js`, `group.js` (HTML strings).
-- `src/components/popups.js` — group/members, expense, settle-up modals.
+- `src/components/popups.js` — group/members, expense (with group chooser), settle-up modals.
+- `src/components/layout.js` — header + user/sign-out pill.
+- `src/styles/layout/responsive.css` — all breakpoints (1023 / 767 / 424).
+- `public/` — share image (`og-image.svg` source, `og-image.png` used in meta tags).
 - `src/utils/money.js` — pure money math (tested).
 
 ## Not built (candidates for next session)

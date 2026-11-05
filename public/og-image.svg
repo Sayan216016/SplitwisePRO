@@ -1,0 +1,81 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="Montserrat, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <clipPath id="mark"><circle cx="102" cy="104" r="22"/></clipPath>
+    <clipPath id="card"><rect x="720" y="100" width="420" height="420" rx="18"/></clipPath>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#00482f" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="#ffffff"/>
+  <circle cx="930" cy="310" r="330" fill="#effcf8"/>
+  <circle cx="1130" cy="70" r="90" fill="#e8fdac" opacity="0.7"/>
+  <g fill="#b7ecda"><circle cx="1100" cy="560" r="4"/><circle cx="1124" cy="560" r="4"/><circle cx="1148" cy="560" r="4"/><circle cx="1100" cy="584" r="4"/><circle cx="1124" cy="584" r="4"/><circle cx="1148" cy="584" r="4"/></g>
+
+  <!-- Logo -->
+  <g clip-path="url(#mark)"><rect x="70" y="70" width="70" height="70" fill="#006642"/><circle cx="95" cy="104" r="22" fill="#8dc63f"/></g>
+  <text x="138" y="116" font-size="34" font-weight="500" fill="#008254">SplitwisePRO</text>
+
+  <!-- Headline -->
+  <text x="80" y="250" font-size="66" font-weight="700" fill="#000000">Split bills,</text>
+  <text x="80" y="330" font-size="66" font-weight="700" fill="#008254">not friendships.</text>
+  <rect x="80" y="362" width="96" height="6" rx="3" fill="#9ae600"/>
+  <text font-size="26" fill="#3d4045">
+    <tspan x="80" y="428">Track shared expenses, see who owes</tspan>
+    <tspan x="80" y="464">whom, and settle up in one tap.</tspan>
+  </text>
+
+  <!-- Feature pills -->
+  <g font-size="19" font-weight="500" fill="#00482f">
+    <rect x="80" y="520" width="196" height="44" rx="22" fill="#effcf8" stroke="#b7ecda"/>
+    <text x="178" y="549" text-anchor="middle">Groups &amp; friends</text>
+    <rect x="290" y="520" width="168" height="44" rx="22" fill="#effcf8" stroke="#b7ecda"/>
+    <text x="374" y="549" text-anchor="middle">Live balances</text>
+    <rect x="472" y="520" width="200" height="44" rx="22" fill="#effcf8" stroke="#b7ecda"/>
+    <text x="572" y="549" text-anchor="middle">Free &#183; Google sign-in</text>
+  </g>
+
+  <!-- Group card -->
+  <rect x="720" y="100" width="420" height="420" rx="18" fill="#ffffff" filter="url(#shadow)"/>
+  <g clip-path="url(#card)">
+    <rect x="720" y="100" width="420" height="96" fill="#008254"/>
+    <text x="752" y="146" font-size="28" font-weight="700" fill="#ffffff">Goa Trip</text>
+    <text x="752" y="176" font-size="17" fill="#e8fdac">4 members &#183; live</text>
+    <g font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="1018" cy="148" r="20" fill="#e3faf2" stroke="#008254" stroke-width="3"/><text x="1018" y="153" fill="#008254">AK</text>
+      <circle cx="1057" cy="148" r="20" fill="#e8fdac" stroke="#008254" stroke-width="3"/><text x="1057" y="153" fill="#00482f">RS</text>
+      <circle cx="1096" cy="148" r="20" fill="#ffffff" stroke="#008254" stroke-width="3"/><text x="1096" y="153" fill="#008254">+2</text>
+    </g>
+  </g>
+
+  <g font-size="19">
+    <g>
+      <circle cx="768" cy="240" r="22" fill="#e3faf2"/><text x="768" y="247" font-size="18" font-weight="700" fill="#008254" text-anchor="middle">H</text>
+      <text x="804" y="236" font-weight="700" fill="#000000">Hotel booking</text>
+      <text x="804" y="260" font-size="15" fill="#64666a">split 4 ways</text>
+      <text x="1112" y="247" font-size="17" font-weight="500" fill="#008254" text-anchor="end">you lent</text>
+    </g>
+    <rect x="752" y="284" width="360" height="1" fill="#ebebec"/>
+    <g>
+      <circle cx="768" cy="320" r="22" fill="#e3faf2"/><text x="768" y="327" font-size="18" font-weight="700" fill="#008254" text-anchor="middle">D</text>
+      <text x="804" y="316" font-weight="700" fill="#000000">Beach dinner</text>
+      <text x="804" y="340" font-size="15" fill="#64666a">paid by Ananya</text>
+      <text x="1112" y="327" font-size="17" font-weight="500" fill="#de2828" text-anchor="end">you owe</text>
+    </g>
+    <rect x="752" y="364" width="360" height="1" fill="#ebebec"/>
+    <g>
+      <circle cx="768" cy="400" r="22" fill="#e3faf2"/><text x="768" y="407" font-size="18" font-weight="700" fill="#008254" text-anchor="middle">C</text>
+      <text x="804" y="396" font-weight="700" fill="#000000">Cab to airport</text>
+      <text x="804" y="420" font-size="15" fill="#64666a">paid by you</text>
+      <text x="1112" y="407" font-size="17" font-weight="500" fill="#008254" text-anchor="end">you lent</text>
+    </g>
+    <rect x="752" y="444" width="360" height="1" fill="#ebebec"/>
+    <g>
+      <circle cx="768" cy="480" r="22" fill="#008254"/>
+      <path d="M758 480 l7 7 l13 -14" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="804" y="476" font-weight="700" fill="#000000">Rahul paid you</text>
+      <text x="804" y="500" font-size="15" fill="#64666a">settled up</text>
+      <text x="1112" y="487" font-size="17" font-weight="500" fill="#64666a" text-anchor="end">settled</text>
+    </g>
+  </g>
+</svg>
