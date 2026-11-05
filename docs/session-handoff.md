@@ -23,6 +23,12 @@ Read this first in a new conversation. Architecture lives in `architecture.md`, 
 - Sign-in copy no longer mentions ₹ (tagline + background coins).
 - **Link previews:** Open Graph / Twitter tags in `index.html`; image at `public/og-image.png` (1200×630, rendered from `public/og-image.svg` — WhatsApp/Facebook don't accept SVG). Regenerating the PNG needs resvg + static Montserrat TTFs (not a project dependency).
 
+## Session 3 — structure / standards
+
+- Page controllers moved out of `main.js` into `src/controllers/` (behaviour unchanged).
+- ESLint 9 flat config (`npm run lint`), runs in CI before tests. `.editorconfig`, `.env.example`, `engines.node >= 22`, real README.
+- **Link preview without image = WhatsApp cache**, not a code bug: the live page serves the tags and `og-image.png` (200, image/png, 88 KB). WhatsApp caches a preview per URL, so a URL shared before the tags were deployed keeps the old title and no image. Test with a fresh URL (e.g. `…/SplitwisePRO/?v=2`); Facebook's Sharing Debugger can force a re-scrape for the bare URL.
+
 ## Product decisions (chosen by user)
 
 | Topic | Decision |
@@ -62,9 +68,10 @@ groups/{gid}/activity/{aid} { groupId, groupName, memberIds[], actorId, actorNam
 
 ## File map
 
-- `src/main.js` — router + `mountSignIn` / `mountHome` / `mountGroup`.
+- `src/main.js` — bootstrap, auth gate, hash router.
+- `src/controllers/` — one `mount*` per route (`signin`, `home`, `group`, `friend`), each returns its cleanup; `shared.js` holds `#app` helpers + `openExistingExpense`.
 - `src/services/db.js` — all Firestore I/O; `auth.js` — sign-in + post-login profile/invite claim.
-- `src/views/` — `signin.js`, `home.js`, `group.js` (HTML strings).
+- `src/views/` — `signin.js`, `home.js`, `group.js`, `friend.js` (HTML strings).
 - `src/components/popups.js` — group/members, expense (with group chooser), settle-up modals.
 - `src/components/layout.js` — header + user/sign-out pill.
 - `src/styles/layout/responsive.css` — all breakpoints (1023 / 767 / 424).

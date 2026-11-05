@@ -29,7 +29,8 @@ flowchart TB
   end
 
   subgraph entry["Entry"]
-    MAIN["main.js — router, auth gate, mount* controllers"]
+    MAIN["main.js — router, auth gate"]
+    CTRL["controllers/* — mount* per route"]
   end
 
   subgraph ui["UI layer"]
@@ -50,12 +51,13 @@ flowchart TB
   end
 
   HTML --> MAIN
-  MAIN --> VIEWS
-  MAIN --> COMP
+  MAIN --> CTRL
+  CTRL --> VIEWS
+  CTRL --> COMP
   VIEWS --> COMP
   VIEWS --> UTILS
   MAIN --> AUTH
-  MAIN --> DB
+  CTRL --> DB
   AUTH --> CFG
   DB --> CFG
   CFG --> FA
@@ -73,13 +75,17 @@ Copy this shape for a new app; rename domains (`checklists` → your collections
 ```
 project/
 ├── index.html                 # #app mount, #toast, theme script in <head>
-├── firebase-config.js         # Public web config (gitignored or example file)
+├── .env.example               # VITE_FIREBASE_* keys; copy to .env.local (gitignored)
+├── eslint.config.js           # npm run lint — also runs in CI
 ├── firestore.rules            # Deploy separately: firebase deploy --only firestore:rules
 ├── firestore.indexes.json
 ├── vite.config.js             # base: "/RepoName/" for GitHub Pages subpath
 │
 ├── src/
-│   ├── main.js                # Single entry: CSS import, router, auth, mount*
+│   ├── main.js                # Single entry: CSS import, router, auth gate
+│   ├── controllers/
+│   │   ├── shared.js          # #app helpers, settle gate, cross-page actions
+│   │   └── *.js               # export function mountPage(...) → cleanup fn
 │   ├── config/
 │   │   └── firebase.js        # initializeApp, auth, db exports
 │   ├── services/
@@ -153,7 +159,7 @@ Sign-in page re-renders itself for loading/error without touching authenticated 
 
 ## Page controller pattern (`mount*`)
 
-Each route is a **function** in `main.js` (e.g. `mountHome`, `mountList`), not a class.
+Each route is a **function** in its own file under `controllers/` (e.g. `mountHome`, `mountGroup`), not a class. It **returns its cleanup function**; the router stores it as `unsubRoute`.
 
 Typical responsibilities:
 
@@ -164,7 +170,7 @@ Typical responsibilities:
 | First paint | Show **skeleton** until required data exists (`null` vs `[]` matters) |
 | UI | Call `renderView(...)` from `views/`, then `setApp(html)` |
 | Events | After mount, `querySelector` + `addEventListener` on `[data-action=…]`, `[data-item-id]`, etc. |
-| Cleanup | Register `unsubRoute = () => { unsubs.forEach(...); clear timers; }` |
+| Cleanup | `return () => { unsubs.forEach(...); clear timers; }` |
 
 **Re-render model:** Firestore `onSnapshot` → update in-memory arrays → full `#app` HTML replace → re-bind events. Simple and predictable; acceptable for this app size.
 
@@ -184,7 +190,7 @@ Typical responsibilities:
   - `data-link` for in-app hash links (if you wire them)
   - `data-edit-item="${id}"` for per-row actions
 
-`main.js` is the only place that attaches listeners to those hooks.
+`controllers/` are the only place that attaches listeners to those hooks.
 
 ---
 
@@ -213,7 +219,7 @@ Modal contract (`modal.js`):
 
 ### `config/firebase.js`
 
-- Import public config from repo-root `firebase-config.js`.
+- Read public config from `VITE_FIREBASE_*` env vars (`.env.local` locally, GitHub Secrets in CI).
 - Export `configMissing`, `auth`, `db`, providers.
 - Guard: if config missing, skip `initializeApp` (app shows setup message).
 
@@ -316,7 +322,7 @@ Local: `npm run dev` (dev server with same `base`), `npm run preview` for produc
 8. **Write** Firestore rules and indexes; deploy with Firebase CLI.
 9. **Add** `.github/workflows/deploy-pages.yml` when ready to ship.
 
-Keep the **separation**: router/controllers in `main.js`, strings in `views/`, I/O in `services/`, design tokens in CSS, rules on the server.
+Keep the **separation**: router in `main.js`, controllers in `controllers/`, strings in `views/`, I/O in `services/`, design tokens in CSS, rules on the server.
 
 ---
 
