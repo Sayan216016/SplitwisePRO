@@ -21,6 +21,8 @@
   transform-origin: center center;
 }
 .modal__title { font-size: 20px; margin: 0 var(--s-xxl) 0 0; }
+.delete-confirm { display: grid; gap: var(--s-md); }
+.delete-confirm .form__actions { margin-top: var(--s-xs); }
 .modal__close {
   position: absolute;
   top: var(--s-sm);

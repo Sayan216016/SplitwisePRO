@@ -30,14 +30,37 @@ const actions = (label, extra = "") =>
 const deleteBtn = `<button class="btn btn--danger" type="button" data-delete>Delete</button>`;
 
 function bindDelete(root, onDelete, what) {
-  root.querySelector("[data-delete]")?.addEventListener("click", async () => {
-    if (!confirm(`Delete this ${what}?`)) return;
-    try {
-      await onDelete();
-      closeModal();
-    } catch (err) {
-      root.querySelector("[data-error]").textContent = err.message;
-    }
+  root.querySelector("[data-delete]")?.addEventListener("click", () => {
+    const form = root.querySelector("form");
+    if (!form || root.querySelector("[data-delete-confirm]")) return;
+    form.hidden = true;
+    root.insertAdjacentHTML("beforeend", `<div class="delete-confirm" data-delete-confirm>
+      <h2 class="modal__title">Delete this ${what}?</h2>
+      <p class="muted">This can't be undone.</p>
+      <p class="form__error" data-error role="alert"></p>
+      <div class="form__actions">
+        <button class="btn btn--outline" type="button" data-cancel>Cancel</button>
+        <button class="btn btn--danger" type="button" data-confirm>Delete</button>
+      </div>
+    </div>`);
+    const panel = root.querySelector("[data-delete-confirm]");
+    panel.querySelector("[data-cancel]").addEventListener("click", () => {
+      panel.remove();
+      form.hidden = false;
+    });
+    panel.querySelector("[data-confirm]").addEventListener("click", async () => {
+      const err = panel.querySelector("[data-error]");
+      const btn = panel.querySelector("[data-confirm]");
+      btn.disabled = true;
+      err.textContent = "";
+      try {
+        await onDelete();
+        closeModal();
+      } catch (e) {
+        err.textContent = e.message;
+        btn.disabled = false;
+      }
+    });
   });
 }
 
