@@ -1,0 +1,41 @@
+.container { max-width: var(--container); margin: 0 auto; padding: 0 var(--s-xl); }
+
+.nav { background: var(--canvas); border-bottom: 1px solid var(--hairline); }
+.nav__inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.nav__actions { display: flex; align-items: center; gap: var(--s-sm); }
+
+.logo { display: inline-flex; align-items: center; gap: var(--s-xs); font-size: 20px; font-weight: 500; color: var(--primary); text-decoration: none; }
+.logo--light { color: var(--on-primary); }
+.logo__mark { width: 22px; height: 22px; border-radius: var(--r-full); background: var(--logo-lime); box-shadow: inset -7px 0 0 var(--primary-deep); }
+
+.hero-band { background: var(--hero-gradient); color: var(--on-primary); padding: var(--s-xxl) 0; }
+.hero-band h1, .hero-band strong { color: var(--on-primary); }
+.hero__title { font-size: 36px; margin-bottom: var(--s-md); }
+.hero__actions { display: flex; flex-wrap: wrap; gap: var(--s-sm); margin-top: var(--s-xl); }
+.breadcrumb { font-size: 12px; font-weight: 500; margin-bottom: var(--s-xs); }
+.breadcrumb a { color: var(--lime-panel); }
+
+.page__body { padding-top: var(--s-section); padding-bottom: var(--s-section); }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-md); margin-bottom: var(--s-md); }
+.section-head h2 { margin: 0; }
+
+.panel-mint { background: var(--mint-50); border-radius: var(--r-xxxl); padding: var(--s-xl); }
+
+.avatar {
+  width: 32px; height: 32px; border-radius: var(--r-full); object-fit: cover; flex: none;
+  display: inline-grid; place-items: center; font-size: 12px; font-weight: 700;
+  background: var(--mint-100); color: var(--primary); border: 2px solid var(--canvas);
+}
+.avatar--sm { width: 24px; height: 24px; font-size: 10px; }
+.avatars { display: flex; align-items: center; }
+.avatars .avatar + .avatar { margin-left: -8px; }
+.avatars .caption { margin-left: var(--s-sm); }
+
+.icon-circle {
+  width: 40px; height: 40px; border-radius: var(--r-full); flex: none;
+  display: grid; place-items: center; font-weight: 700;
+  background: var(--primary); color: var(--on-primary);
+}
+.icon-circle--inactive { background: var(--mint-50); color: var(--primary); }
+
+.empty { background: var(--canvas-soft); border-radius: var(--r-lg); padding: var(--s-xxl); text-align: center; }

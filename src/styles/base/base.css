@@ -1,0 +1,38 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: var(--font);
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--body);
+  background: var(--canvas);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { color: var(--ink); font-weight: 700; margin: 0 0 var(--s-md); line-height: 1.25; }
+h2 { font-size: 20px; }
+h3 { font-size: 18px; }
+p { margin: 0 0 var(--s-xs); }
+strong { font-weight: 700; color: var(--ink); }
+a { color: inherit; }
+ul { list-style: none; margin: 0; padding: 0; }
+button, input, select { font: inherit; color: inherit; }
+img { display: block; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.eyebrow { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: var(--s-xs); }
+.eyebrow--light { color: var(--lime-panel); }
+.caption { font-size: 12px; font-weight: 500; }
+.muted { color: var(--muted); }
+.pos { color: var(--primary); font-weight: 500; }
+.neg { color: var(--error); font-weight: 500; }
+.lime { color: var(--lime-hero); }
+.link-green { color: var(--primary); font-weight: 500; font-size: 14px; text-decoration-thickness: 2px; }
+
+/* Entry animation only before the app settles, so snapshots don't replay it. */
+#app:not([data-settled]) .page__body { animation: rise 0.35s ease-out both; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

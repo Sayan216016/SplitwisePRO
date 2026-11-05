@@ -1,0 +1,7 @@
+.signin { min-height: 100vh; display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; background: var(--hero-gradient); position: relative; }
+.signin__theme { position: absolute; top: var(--s-md); right: var(--s-md); }
+.signin__hero { padding: var(--s-section); color: var(--on-primary); }
+.signin__title { font-size: 52px; line-height: 1.15; color: var(--on-primary); margin: var(--s-xxl) 0 var(--s-md); }
+.signin__lead { font-size: 18px; max-width: 460px; }
+.auth-card { background: var(--canvas-soft); border-radius: var(--r-lg); padding: var(--s-xl); margin: var(--s-section); max-width: 420px; display: grid; gap: var(--s-sm); }
+.auth-card h2 { margin: 0; }

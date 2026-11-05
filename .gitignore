@@ -1,3 +1,6 @@
 .sf/
 .sfdx/
 .localdevserver/
+node_modules/
+dist/
+.env.local

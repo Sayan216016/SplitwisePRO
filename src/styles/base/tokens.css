@@ -1,0 +1,47 @@
+:root {
+  --primary: #008254;
+  --primary-deep: #006642;
+  --forest: #00482f;
+  --on-primary: #ffffff;
+  --lime-hero: #9ae600;
+  --lime-panel: #e8fdac;
+  --logo-lime: #8dc63f;
+  --canvas: #ffffff;
+  --canvas-soft: #f7f7f7;
+  --mint-50: #effcf8;
+  --mint-100: #e3faf2;
+  --mint-200: #b7ecda;
+  --hairline: #ebebec;
+  --hairline-strong: #d8d9da;
+  --ink: #000000;
+  --body: #3d4045;
+  --muted: #64666a;
+  --faint: #b1b3b5;
+  --link: #005fb9;
+  --error: #de2828;
+  --hero-gradient: linear-gradient(100deg, var(--forest) 0%, var(--primary) 60%, #1a9b6c 100%);
+
+  --font: "Montserrat", "Gotham", system-ui, sans-serif;
+
+  --r-none: 0;
+  --r-xs: 2px;
+  --r-sm: 4px;
+  --r-lg: 8px;
+  --r-xl: 10px;
+  --r-xxl: 12px;
+  --r-xxxl: 16px;
+  --r-full: 9999px;
+
+  --s-xxs: 4px;
+  --s-xs: 8px;
+  --s-sm: 12px;
+  --s-md: 16px;
+  --s-lg: 20px;
+  --s-xl: 24px;
+  --s-xxl: 32px;
+  --s-section: 40px;
+
+  --shadow-3: rgba(100, 102, 106, 0.05) 0 4px 16px, rgba(100, 102, 104, 0.05) 0 16px 40px;
+  --shadow-4: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+  --container: 1200px;
+}

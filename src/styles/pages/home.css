@@ -1,0 +1,5 @@
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 220px)); gap: var(--s-sm); }
+.stat { display: grid; gap: var(--s-xxs); background: var(--canvas); color: var(--muted); border-radius: var(--r-lg); padding: var(--s-md); }
+.stat strong { font-size: 24px; }
+.stat--dark { background: var(--primary-deep); color: var(--on-primary); }
+.home-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--s-xxl); align-items: start; }

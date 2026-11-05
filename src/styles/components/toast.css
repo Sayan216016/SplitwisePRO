@@ -1,0 +1,7 @@
+.toast {
+  position: fixed; left: 50%; bottom: var(--s-xl); transform: translateX(-50%); z-index: 60;
+  max-width: calc(100% - 32px); background: var(--canvas); color: var(--ink);
+  border-left: 4px solid var(--primary); border-radius: var(--r-lg);
+  padding: var(--s-sm) var(--s-lg); font-size: 14px; box-shadow: var(--shadow-4);
+}
+.toast[data-kind="error"] { border-left-color: var(--error); }

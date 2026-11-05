@@ -1,0 +1,11 @@
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: var(--s-md);
+  background: rgb(0 0 0 / 0.4); animation: fade 0.15s ease-out;
+}
+.modal {
+  position: relative; width: min(520px, 100%); max-height: calc(100vh - 32px); overflow-y: auto;
+  background: var(--canvas); border-radius: var(--r-lg); padding: var(--s-xl); box-shadow: var(--shadow-4);
+}
+.modal__title { font-size: 20px; margin: 0 var(--s-xxl) 0 0; }
+.modal__close { position: absolute; top: var(--s-sm); right: var(--s-sm); width: 40px; height: 40px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; }
+@keyframes fade { from { opacity: 0; } }

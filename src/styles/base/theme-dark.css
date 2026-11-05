@@ -1,0 +1,20 @@
+[data-theme="dark"] {
+  --primary: #1fa774;
+  --primary-deep: #0d5c3f;
+  --forest: #06301f;
+  --canvas: #0f1412;
+  --canvas-soft: #161c19;
+  --mint-50: #12211b;
+  --mint-100: #172c23;
+  --mint-200: #1f4a39;
+  --hairline: #232b27;
+  --hairline-strong: #34403a;
+  --ink: #ffffff;
+  --body: #c9cdd1;
+  --muted: #9aa0a5;
+  --faint: #5f6569;
+  --link: #6aaef0;
+  --error: #ff6161;
+  --hero-gradient: linear-gradient(100deg, #031a11 0%, var(--forest) 50%, var(--primary-deep) 100%);
+  color-scheme: dark;
+}

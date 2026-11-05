@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function groupPath(gid) { return /databases/$(database)/documents/groups/$(gid); }
+    function isMember(gid) { return signedIn() && request.auth.uid in get(groupPath(gid)).data.memberIds; }
+    function isMemberAfter(gid) { return signedIn() && request.auth.uid in getAfter(groupPath(gid)).data.memberIds; }
+
+    match /users/{uid} {
+      allow get: if signedIn();
+      // Search is exact-email lookup only; block dumping the whole user list.
+      allow list: if signedIn() && request.query.limit <= 1;
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /groups/{gid} {
+      allow read: if signedIn() && (request.auth.uid in resource.data.memberIds || myEmail() in resource.data.pendingEmails);
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.auth.uid in request.resource.data.memberIds;
+      allow update: if signedIn() && (
+        request.auth.uid in resource.data.memberIds
+        // Invited user claiming their own pending invite.
+        || (myEmail() in resource.data.pendingEmails
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'pendingEmails', 'members', 'updatedAt'])
+            && request.resource.data.memberIds.hasAll(resource.data.memberIds)
+            && request.auth.uid in request.resource.data.memberIds
+            && !(myEmail() in request.resource.data.pendingEmails))
+      );
+      allow delete: if signedIn() && resource.data.createdBy == request.auth.uid;
+
+      match /expenses/{eid} {
+        allow read, delete: if isMember(gid);
+        allow create, update: if isMember(gid)
+          && request.resource.data.amount is int
+          && request.resource.data.amount > 0;
+      }
+
+      match /activity/{aid} {
+        allow create: if isMemberAfter(gid) && request.resource.data.actorId == request.auth.uid;
+      }
+    }
+
+    match /{path=**}/activity/{aid} {
+      allow read: if signedIn() && request.auth.uid in resource.data.memberIds;
+    }
+  }
+}

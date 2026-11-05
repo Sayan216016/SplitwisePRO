@@ -1,0 +1,22 @@
+@media (max-width: 1023px) {
+  .home-grid, .group-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 767px) {
+  .desktop-only { display: none; }
+  .signin { grid-template-columns: 1fr; align-content: center; }
+  .signin__hero { padding: var(--s-xl); }
+  .signin__title { font-size: 36px; }
+  .auth-card { margin: 0 var(--s-xl) var(--s-xl); max-width: none; }
+  .hero__title { font-size: 28px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stat--dark { grid-column: 1 / -1; }
+  .hero__actions .btn { flex: 1 1 auto; }
+}
+
+@media (max-width: 424px) {
+  .container { padding: 0 var(--s-md); }
+  .nav__actions .avatar { display: none; }
+  .form__pair { grid-template-columns: 1fr; }
+  .row__end { max-width: 40%; }
+}

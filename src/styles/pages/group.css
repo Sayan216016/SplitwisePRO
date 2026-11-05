@@ -1,0 +1,8 @@
+.group-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--s-xxl); align-items: start; }
+.side { display: grid; gap: var(--s-xl); }
+.side .btn--danger { margin-top: var(--s-xl); }
+.debt { display: grid; grid-template-columns: 1fr auto; gap: var(--s-xxs) var(--s-sm); align-items: center; padding: var(--s-sm) 0; border-bottom: 1px solid var(--hairline); font-size: 14px; }
+.debt:last-child { border-bottom: 0; }
+.debt p { margin: 0; grid-column: 1 / -1; }
+.debt__amount { font-size: 20px; font-weight: 700; color: var(--primary); }
+.row--payment .icon-circle { background: var(--lime-panel); color: var(--forest); }
