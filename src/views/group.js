@@ -8,14 +8,16 @@ export function renderNotFound(user) {
     <a class="btn btn--primary" href="#/">Back to groups</a></div></div></main>`;
 }
 
-function expenseRow(e, user, name) {
+export function expenseRow(e, user, name, groupName = "") {
+  const where = groupName ? `${escapeHtml(groupName)} · ` : "";
+  const by = `added by ${e.createdBy === user.uid ? "you" : escapeHtml(name(e.createdBy))} · `;
   if (e.type === "payment") {
     const [from] = Object.keys(e.paidBy);
     const [to] = Object.keys(e.split);
     return `<li><button class="row row--payment" type="button" data-edit-expense="${escapeHtml(e.id)}">
       <span class="icon-circle" aria-hidden="true">₹</span>
       <span class="row__main"><strong>${escapeHtml(name(from))} paid ${escapeHtml(name(to))}</strong>
-        <span class="caption muted">${timeAgo(e.createdAt)}</span></span>
+        <span class="caption muted">${where}${by}${timeAgo(e.createdAt)}</span></span>
       <span class="row__end"><strong>${formatINR(e.amount)}</strong></span>
     </button></li>`;
   }
@@ -28,12 +30,12 @@ function expenseRow(e, user, name) {
   return `<li><button class="row" type="button" data-edit-expense="${escapeHtml(e.id)}">
     <span class="icon-circle icon-circle--inactive" aria-hidden="true">${escapeHtml(e.description[0]?.toUpperCase() || "•")}</span>
     <span class="row__main"><strong>${escapeHtml(e.description)}</strong>
-      <span class="caption muted">${escapeHtml(paidText)} ${formatINR(e.amount)} · ${timeAgo(e.createdAt)}</span></span>
+      <span class="caption muted">${where}${escapeHtml(paidText)} ${formatINR(e.amount)} · ${by}${timeAgo(e.createdAt)}</span></span>
     <span class="row__end caption">${end}</span>
   </button></li>`;
 }
 
-export function renderGroup({ user, group, expenses }) {
+export function renderGroup({ user, group, expenses, hasMore = false }) {
   const members = memberList(group);
   const name = (uid) => (uid === user.uid ? "You" : group.members?.[uid]?.name || "Someone");
   const balances = group.balances || {};
@@ -58,7 +60,8 @@ export function renderGroup({ user, group, expenses }) {
     <div class="container page__body group-grid">
       <section>
         <h2>Expenses</h2>
-        ${expenses.length ? `<ul class="rows">${expenses.map((e) => expenseRow(e, user, name)).join("")}</ul>`
+        ${expenses.length ? `<ul class="rows">${expenses.map((e) => expenseRow(e, user, name)).join("")}</ul>
+          ${hasMore ? `<button class="btn btn--outline load-more" type="button" data-action="load-more-expenses">Load more</button>` : ""}`
           : `<div class="empty"><h3>No expenses yet</h3><p>Add the first one — dinner, cab, rent, anything.</p></div>`}
       </section>
       <aside class="side">

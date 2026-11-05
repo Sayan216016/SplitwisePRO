@@ -54,6 +54,30 @@ export function balanceDelta({ paidBy, split }, sign = 1) {
   return out;
 }
 
+/** Net paise per friend across shared groups (positive = they owe you). Uses group balances only. */
+export function aggregateFriendBalances(myUid, groups) {
+  const net = {};
+  for (const g of groups) {
+    if (!g.balances || !g.memberIds?.includes(myUid)) continue;
+    for (const { from, to, amount } of simplifyDebts(g.balances)) {
+      if (from === myUid) net[to] = (net[to] || 0) - amount;
+      else if (to === myUid) net[from] = (net[from] || 0) + amount;
+    }
+  }
+  return net;
+}
+
+/** Per shared group: the simplified debt between you and one friend (net > 0 = they owe you). */
+export function friendGroupDebts(myUid, friendUid, groups) {
+  return groups
+    .filter((g) => g.memberIds?.includes(myUid) && g.memberIds.includes(friendUid))
+    .map((group) => {
+      const debt = simplifyDebts(group.balances || {}).find((d) =>
+        (d.from === myUid && d.to === friendUid) || (d.from === friendUid && d.to === myUid)) || null;
+      return { group, debt, net: !debt ? 0 : debt.to === myUid ? debt.amount : -debt.amount };
+    });
+}
+
 // Greedy: biggest debtor pays biggest creditor. At most n-1 transfers.
 export function simplifyDebts(balances) {
   const people = Object.entries(balances).filter(([, b]) => b !== 0).map(([uid, b]) => ({ uid, b }));

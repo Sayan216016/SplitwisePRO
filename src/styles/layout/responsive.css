@@ -1,5 +1,5 @@
 @media (max-width: 1023px) {
-  .home-grid, .group-grid { grid-template-columns: 1fr; }
+  .group-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 767px) {

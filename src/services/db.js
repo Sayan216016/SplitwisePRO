@@ -124,8 +124,9 @@ export async function deleteGroup(gid) {
 
 // ─── Expenses (payments are expenses with type "payment") ───
 
-export function subscribeExpenses(gid, cb, onError) {
-  const q = query(collection(groupRef(gid), "expenses"), orderBy("createdAt", "desc"));
+export function subscribeExpenses(gid, cb, onError, max) {
+  const parts = [orderBy("createdAt", "desc"), ...(max ? [limit(max)] : [])];
+  const q = query(collection(groupRef(gid), "expenses"), ...parts);
   return onSnapshot(q, (snap) => cb(toList(snap)), onError);
 }
 

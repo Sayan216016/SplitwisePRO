@@ -20,7 +20,7 @@ Read this first in a new conversation. Architecture lives in `architecture.md`, 
 | Payers | Multiple payers with amounts each |
 | Settling | Simplified debts + "Record payment" |
 | Unknown email | Pending invite, auto-join on sign-up |
-| Permissions | Any member adds/edits/deletes expenses and adds members; only creator deletes group |
+| Permissions | Any member adds expenses and members; only the expense's author edits/deletes it (others see it read-only); only creator deletes group |
 | Extras | Dashboard, dark mode, activity feed |
 | Repo / base path | `SplitwisePRO` → `/SplitwisePRO/` |
 | Firebase config | GitHub Secrets → `VITE_FIREBASE_*` env vars (deviation from architecture.md's committed `firebase-config.js`) |

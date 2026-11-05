@@ -41,6 +41,15 @@ function bindDelete(root, onDelete, what) {
   });
 }
 
+// View-only for anyone but the author: disable every control and say who can edit.
+function lockForm(root, authorName) {
+  root.querySelector(".modal__title").textContent = root.querySelector(".modal__title").textContent.replace(/^Edit /, "View ");
+  root.querySelectorAll("input, select, button:not([data-close])").forEach((el) => (el.disabled = true));
+  root.querySelector(".form__actions").hidden = true;
+  root.querySelector(".modal__title").insertAdjacentHTML("afterend",
+    `<p class="field__hint">Added by <strong>${escapeHtml(authorName)}</strong> — only they can edit or delete it.</p>`);
+}
+
 // ─── Create group / add members ───
 
 export function openGroupModal({ group, selfEmail, findUser, onSave }) {
@@ -115,7 +124,7 @@ export function openGroupModal({ group, selfEmail, findUser, onSave }) {
 
 // ─── Add / edit expense ───
 
-export function openExpenseModal({ group, user, expense, onSave, onDelete }) {
+export function openExpenseModal({ group, user, expense, onSave, onDelete, readOnlyBy }) {
   const members = memberList(group);
   const e = expense || {};
   const payers = Object.keys(e.paidBy || {});
@@ -210,13 +219,14 @@ export function openExpenseModal({ group, user, expense, onSave, onDelete }) {
     drawSplit(t === e.splitType);
   });
   drawSplit(true);
+  if (readOnlyBy) return lockForm(root, readOnlyBy);
   bindSubmit(root, (fd) => onSave({ type: "expense", description: String(fd.get("description")).trim(), ...build() }));
   bindDelete(root, onDelete, "expense");
 }
 
 // ─── Record payment (settle up) ───
 
-export function openSettleModal({ group, user, payment, suggestion, onSave, onDelete }) {
+export function openSettleModal({ group, user, payment, suggestion, onSave, onDelete, readOnlyBy }) {
   const members = memberList(group);
   const from = payment ? Object.keys(payment.paidBy)[0] : suggestion?.from ?? user.uid;
   const to = payment ? Object.keys(payment.split)[0] : suggestion?.to ?? members.find((m) => m.uid !== user.uid)?.uid;
@@ -233,6 +243,7 @@ export function openSettleModal({ group, user, payment, suggestion, onSave, onDe
       <input class="input" name="amount" type="number" min="0.01" step="0.01" required inputmode="decimal" value="${amount ? amount / 100 : ""}"></label>
     ${actions("Save payment", payment ? deleteBtn : "")}
   </form>`);
+  if (readOnlyBy) return lockForm(root, readOnlyBy);
 
   bindSubmit(root, (fd) => {
     const amt = toPaise(fd.get("amount"));

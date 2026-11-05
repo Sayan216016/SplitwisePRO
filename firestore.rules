@@ -31,10 +31,17 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.createdBy == request.auth.uid;
 
       match /expenses/{eid} {
-        allow read, delete: if isMember(gid);
-        allow create, update: if isMember(gid)
-          && request.resource.data.amount is int
-          && request.resource.data.amount > 0;
+        function validAmount() { return request.resource.data.amount is int && request.resource.data.amount > 0; }
+        allow read: if isMember(gid);
+        allow create: if isMember(gid) && validAmount()
+          && request.resource.data.createdBy == request.auth.uid;
+        // Only the author edits; authorship can't be reassigned.
+        allow update: if isMember(gid) && validAmount()
+          && resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdBy == resource.data.createdBy;
+        // Author, or the group creator when deleting the whole group.
+        allow delete: if isMember(gid)
+          && (resource.data.createdBy == request.auth.uid || get(groupPath(gid)).data.createdBy == request.auth.uid);
       }
 
       match /activity/{aid} {
