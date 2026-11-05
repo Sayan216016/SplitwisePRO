@@ -3,18 +3,30 @@
 .nav { background: var(--canvas); border-bottom: 1px solid var(--hairline); }
 .nav__inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
 .nav__actions { display: flex; align-items: center; gap: var(--s-sm); }
+.user-chip {
+  display: inline-flex; align-items: center; gap: var(--s-xs); flex: none; height: 40px; padding: 0 4px 0 6px;
+  border: 1px solid var(--hairline-strong); border-radius: var(--r-full);
+}
+.user-chip .avatar { border: 0; }
+.user-chip__name { font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+.user-chip__out {
+  height: 30px; padding: 0 var(--s-sm); border: 0; border-left: 1px solid var(--hairline-strong); border-radius: 0 var(--r-full) var(--r-full) 0;
+  background: transparent; color: var(--muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+  white-space: nowrap; flex: none;
+}
+.user-chip__out:hover { color: var(--ink); }
 
 .logo { display: inline-flex; align-items: center; gap: var(--s-xs); font-size: 20px; font-weight: 500; color: var(--primary); text-decoration: none; }
 .logo--light { color: var(--on-primary); }
 .logo__mark { width: 22px; height: 22px; border-radius: var(--r-full); background: var(--logo-lime); box-shadow: inset -7px 0 0 var(--primary-deep); }
 
-.hero-band { background: var(--hero-gradient); color: var(--on-primary); padding: var(--s-xxl) 0; }
+.hero-band { background: var(--hero-gradient); color: var(--on-primary); padding: var(--s-xl) 0; }
 .hero-band h1, .hero-band strong { color: var(--on-primary); }
-.hero__title { font-size: 36px; margin-bottom: var(--s-md); }
-.hero__actions { display: flex; flex-wrap: wrap; gap: var(--s-sm); margin-top: var(--s-xl); }
-.breadcrumb { font-size: 12px; font-weight: 500; margin-bottom: var(--s-xs); }
-.breadcrumb a { color: var(--lime-panel); }
-
+.hero__title { font-size: 28px; margin-bottom: var(--s-sm); }
+.hero__actions { display: flex; flex-wrap: wrap; gap: var(--s-sm); margin-top: var(--s-md); }
+.hero__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-md); flex-wrap: wrap; margin-bottom: var(--s-md); }
+.hero__head .hero__title { margin: 0; }
+.hero__cta { display: flex; gap: var(--s-sm); }
 .page__body { padding-top: var(--s-section); padding-bottom: var(--s-section); }
 .section-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-md); margin-bottom: var(--s-md); }
 .section-head h2 { margin: 0; }

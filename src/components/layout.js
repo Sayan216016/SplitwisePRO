@@ -15,8 +15,11 @@ export function renderHeader(user) {
       <a class="logo" href="#/"><span class="logo__mark" aria-hidden="true"></span>SplitwisePRO</a>
       <div class="nav__actions">
         ${themeButton()}
-        ${avatar({ name: user.displayName, photoURL: user.photoURL })}
-        <button class="btn btn--secondary" type="button" data-action="sign-out">Sign out</button>
+        <div class="user-chip">
+          ${avatar({ name: user.displayName, photoURL: user.photoURL }, "avatar--sm")}
+          <span class="user-chip__name">${escapeHtml(user.displayName || user.email)}</span>
+          <button class="user-chip__out" type="button" data-action="sign-out">Sign out</button>
+        </div>
       </div>
     </div>
   </header>`;

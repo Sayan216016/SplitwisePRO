@@ -124,8 +124,11 @@ export function openGroupModal({ group, selfEmail, findUser, onSave }) {
 
 // ─── Add / edit expense ───
 
-export function openExpenseModal({ group, user, expense, onSave, onDelete, readOnlyBy }) {
-  const members = memberList(group);
+// Pass `groups` to let the user choose (dashboard / friend page); pass only `group` to lock it.
+export function openExpenseModal({ group, groups, user, expense, onSave, onDelete, readOnlyBy }) {
+  const choices = groups || [group];
+  let current = group || (choices.length === 1 ? choices[0] : null);
+  let members = current ? memberList(current) : [];
   const e = expense || {};
   const payers = Object.keys(e.paidBy || {});
   const multiPay = payers.length > 1;
@@ -138,21 +141,19 @@ export function openExpenseModal({ group, user, expense, onSave, onDelete, readO
 
   const root = openModal(`<form class="form" novalidate>
     <h2 class="modal__title">${expense ? "Edit expense" : "Add expense"}</h2>
+    <div class="field"><span class="field__label">Group</span>
+      ${choices.length > 1
+        ? `<div class="tabs" role="group" aria-label="Group">${choices.map((g) =>
+          `<button type="button" class="tab" data-group-id="${escapeHtml(g.id)}" aria-pressed="${g === current}">${escapeHtml(g.name)}</button>`).join("")}</div>
+          <p class="field__hint" data-group-hint ${current ? "hidden" : ""}>Pick a group to choose who paid and who's in.</p>`
+        : `<div class="group-fixed"><span class="icon-circle" aria-hidden="true">${escapeHtml(current.name[0]?.toUpperCase() || "G")}</span><strong>${escapeHtml(current.name)}</strong></div>`}
+    </div>
     <label class="field"><span class="field__label">Description</span>
       <input class="input" name="description" required maxlength="80" value="${escapeHtml(e.description || "")}" placeholder="Dinner"></label>
     <label class="field"><span class="field__label">Amount (₹)</span>
       <input class="input" name="amount" type="number" min="0.01" step="0.01" required inputmode="decimal" value="${e.amount ? e.amount / 100 : ""}"></label>
-    <div class="field">
-      <label class="field__label" for="payer">Paid by</label>
-      <select class="input" id="payer" name="payer">
-        ${members.map((m) => `<option value="${m.uid}" ${(!multiPay && (payers[0] || user.uid) === m.uid) ? "selected" : ""}>${escapeHtml(m.uid === user.uid ? "You" : m.name)}</option>`).join("")}
-        <option value="__multi" ${multiPay ? "selected" : ""}>Multiple people</option>
-      </select>
-      <div class="member-inputs" data-payers ${multiPay ? "" : "hidden"}>
-        ${members.map((m) => memberRow(m, "pay", multiPay && e.paidBy[m.uid] ? e.paidBy[m.uid] / 100 : "", "₹")).join("")}
-      </div>
-    </div>
-    <div class="field">
+    <div class="field" data-payer-field data-needs-group></div>
+    <div class="field" data-needs-group>
       <span class="field__label">Split</span>
       <div class="tabs" role="group" aria-label="Split type">
         ${Object.entries(SPLIT_TYPES).map(([t, label]) => `<button type="button" class="tab" data-split-type="${t}">${label}</button>`).join("")}
@@ -163,6 +164,18 @@ export function openExpenseModal({ group, user, expense, onSave, onDelete, readO
     ${actions("Save", expense ? deleteBtn : "")}
   </form>`);
   const $ = (s) => root.querySelector(s);
+
+  function drawPayers() {
+    $("[data-payer-field]").innerHTML = `<label class="field__label" for="payer">Paid by</label>
+      <select class="input" id="payer" name="payer">
+        ${members.map((m) => `<option value="${m.uid}" ${(!multiPay && (payers[0] || user.uid) === m.uid) ? "selected" : ""}>${escapeHtml(m.uid === user.uid ? "You" : m.name)}</option>`).join("")}
+        <option value="__multi" ${multiPay ? "selected" : ""}>Multiple people</option>
+      </select>
+      <div class="member-inputs" data-payers ${multiPay ? "" : "hidden"}>
+        ${members.map((m) => memberRow(m, "pay", multiPay && e.paidBy[m.uid] ? e.paidBy[m.uid] / 100 : "", "₹")).join("")}
+      </div>`;
+    root.querySelectorAll("[data-needs-group]").forEach((el) => (el.hidden = !current));
+  }
 
   function drawSplit(useSaved) {
     const saved = useSaved && e.splitInput ? e.splitInput : null;
@@ -183,6 +196,7 @@ export function openExpenseModal({ group, user, expense, onSave, onDelete, readO
     [el.dataset.uid, el.type === "checkbox" ? (el.checked ? 1 : 0) : Number(el.value) || 0]));
 
   function build() {
+    if (!current) throw new Error("Choose a group first");
     const amount = toPaise($('[name="amount"]').value);
     if (!(amount > 0)) throw new Error("Enter an amount above ₹0");
     const payer = $('[name="payer"]').value;
@@ -208,19 +222,31 @@ export function openExpenseModal({ group, user, expense, onSave, onDelete, readO
   }
 
   root.addEventListener("input", updateHint);
-  $('[name="payer"]').addEventListener("change", (ev) => {
+  root.addEventListener("change", (ev) => {
+    if (ev.target.name !== "payer") return;
     $("[data-payers]").hidden = ev.target.value !== "__multi";
     updateHint();
   });
-  root.querySelector(".tabs").addEventListener("click", (ev) => {
+  root.addEventListener("click", (ev) => {
+    const gid = ev.target.closest("[data-group-id]")?.dataset.groupId;
+    if (gid) {
+      current = choices.find((g) => g.id === gid);
+      members = memberList(current);
+      root.querySelectorAll("[data-group-id]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.groupId === gid)));
+      $("[data-group-hint]").hidden = true;
+      drawPayers();
+      drawSplit(false);
+      return;
+    }
     const t = ev.target.closest("[data-split-type]")?.dataset.splitType;
     if (!t) return;
     splitType = t;
     drawSplit(t === e.splitType);
   });
+  drawPayers();
   drawSplit(true);
   if (readOnlyBy) return lockForm(root, readOnlyBy);
-  bindSubmit(root, (fd) => onSave({ type: "expense", description: String(fd.get("description")).trim(), ...build() }));
+  bindSubmit(root, (fd) => onSave({ type: "expense", description: String(fd.get("description")).trim(), ...build() }, current));
   bindDelete(root, onDelete, "expense");
 }
 

@@ -17,10 +17,7 @@ function signInBackground() {
       <path class="signin__wave signin__wave--2" d="M-40 600 Q420 500 840 580 T1520 560 L1520 920 L-40 920 Z" fill="var(--logo-lime)" fill-opacity="0.05"/>
       <g class="signin__coins">
         <circle cx="320" cy="680" r="28" fill="none" stroke="var(--lime-hero)" stroke-width="2" stroke-opacity="0.35"/>
-        <text x="320" y="688" text-anchor="middle" fill="var(--lime-hero)" fill-opacity="0.5" font-size="22" font-family="var(--font)" font-weight="700">₹</text>
-        <circle cx="1080" cy="260" r="22" fill="none" stroke="var(--lime-hero)" stroke-width="1.5" stroke-opacity="0.28"/>
-        <text x="1080" y="267" text-anchor="middle" fill="var(--lime-hero)" fill-opacity="0.4" font-size="16" font-family="var(--font)" font-weight="700">₹</text>
-      </g>
+        <circle cx="1080" cy="260" r="22" fill="none" stroke="var(--lime-hero)" stroke-width="1.5" stroke-opacity="0.28"/>      </g>
       <path class="signin__arc" d="M200 380 Q520 180 860 320" fill="none" stroke="var(--on-primary)" stroke-opacity="0.12" stroke-width="2" stroke-dasharray="8 14"/>
     </svg>
   </div>`;
@@ -33,7 +30,7 @@ export function renderSignIn({ loading = false, error = "" } = {}) {
     <section class="signin__hero">
       <a class="logo logo--light" href="#/"><span class="logo__mark" aria-hidden="true"></span>SplitwisePRO</a>
       <h1 class="signin__title">Split bills, <span class="lime">not friendships.</span></h1>
-      <p class="signin__lead">Track shared expenses in ₹, see who owes whom, and settle up in one tap.</p>
+      <p class="signin__lead">Track shared expenses, see who owes whom, and settle up in one tap.</p>
     </section>
     <section class="auth-card">
       <p class="eyebrow">Get started</p>

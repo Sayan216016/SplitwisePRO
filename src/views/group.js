@@ -46,7 +46,7 @@ export function renderGroup({ user, group, expenses, hasMore = false }) {
   <main class="page">
     <section class="hero-band">
       <div class="container">
-        <nav class="breadcrumb" aria-label="Breadcrumb"><a href="#/">Groups</a> › <span>${escapeHtml(group.name)}</span></nav>
+        <a class="btn btn--outline btn--outline-light back-btn" href="#/">← Dashboard</a>
         <h1 class="hero__title">${escapeHtml(group.name)}</h1>
         <div class="avatars">${members.map((m) => avatar(m)).join("")}
           <span class="caption">${members.length} member${members.length === 1 ? "" : "s"}${pending.length ? ` · ${pending.length} invite${pending.length === 1 ? "" : "s"} pending` : ""}</span></div>

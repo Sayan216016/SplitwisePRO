@@ -113,6 +113,9 @@ function mountFriend(user, friendUid) {
     setApp(renderFriend({ user, friendUid, groups, expensesByGroup, limits }));
     bindChrome();
     on('[data-action="load-more-expenses"]', loadMore);
+    on('[data-action="add-expense"]', () => openExpenseModal({
+      groups: shared.map((s) => s.group), user, onSave: (d, g) => saveExpense(g.id, user, d),
+    }));
     app.querySelectorAll("[data-settle-group]").forEach((btn) => btn.addEventListener("click", () => {
       const { group, debt } = shared.find((s) => s.group.id === btn.dataset.settleGroup);
       openSettleModal({ group, user, suggestion: debt, onSave: (d) => saveExpense(group.id, user, d) });
@@ -187,6 +190,12 @@ function mountHome(user) {
       findUser: findUserByEmail,
       onSave: async (d) => navigate(`/group/${await createGroup(user, d)}`),
     }));
+    on('[data-action="add-expense"]', () => groups.length
+      ? openExpenseModal({ groups, user, onSave: async (d, g) => {
+        await saveExpense(g.id, user, d);
+        navigate(`/group/${g.id}`);
+      } })
+      : toast("Create a group first, then add expenses to it."));
     settle();
   };
 

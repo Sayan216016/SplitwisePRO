@@ -118,8 +118,13 @@ export function renderHome({ user, groups, activity, balanceTab = "friends", bal
   <main class="page">
     <section class="hero-band">
       <div class="container">
-        <p class="eyebrow eyebrow--light">Dashboard</p>
-        <h1 class="hero__title">Hi, ${escapeHtml(first)}</h1>
+        <div class="hero__head">
+          <h1 class="hero__title">Hi, ${escapeHtml(first)}</h1>
+          <div class="hero__cta">
+            <button class="btn btn--on-green" type="button" data-action="add-expense">+ Add expense</button>
+            <button class="btn btn--outline btn--outline-light" type="button" data-action="new-group">Create group</button>
+          </div>
+        </div>
         <div class="stats">
           <div class="stat stat--dark"><span class="caption">Total balance</span><strong>${net < 0 ? "−" : ""}${formatINR(Math.abs(net))}</strong></div>
           <div class="stat"><span class="caption">You are owed</span><strong class="pos">${formatINR(owed)}</strong></div>
@@ -131,7 +136,6 @@ export function renderHome({ user, groups, activity, balanceTab = "friends", bal
       <section>
         <div class="section-head">
           <h2>${balanceTab === "activity" ? "Recent activity" : "Balances"}</h2>
-          <button class="btn btn--primary" type="button" data-action="new-group">Create group</button>
         </div>
         <div class="view-tabs" role="tablist" aria-label="Dashboard view">
           ${viewTab("friends", "Friends", balanceTab === "friends")}

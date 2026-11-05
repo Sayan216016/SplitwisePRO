@@ -48,13 +48,16 @@ export function renderFriend({ user, friendUid, groups, expensesByGroup = {}, li
   <main class="page">
     <section class="hero-band">
       <div class="container">
-        <nav class="breadcrumb" aria-label="Breadcrumb"><a href="#/">Friends</a> › <span>${escapeHtml(friend.name)}</span></nav>
+        <a class="btn btn--outline btn--outline-light back-btn" href="#/">← Dashboard</a>
         <div class="friend-hero">
           ${avatar(friend, "avatar--lg")}
           <div>
             <h1 class="hero__title">${headline}</h1>
             <p class="caption">${escapeHtml(friend.email || "")} · ${shared.length} shared group${shared.length === 1 ? "" : "s"}</p>
           </div>
+        </div>
+        <div class="hero__actions">
+          <button class="btn btn--on-green" type="button" data-action="add-expense">+ Add expense</button>
         </div>
       </div>
     </section>

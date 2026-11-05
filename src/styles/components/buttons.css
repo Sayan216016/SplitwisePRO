@@ -14,6 +14,7 @@
 .btn--outline-light { color: var(--on-primary); border-color: rgb(255 255 255 / 0.5); }
 .btn--danger { background: transparent; color: var(--error); border: 1px solid var(--hairline-strong); border-radius: var(--r-lg); padding: 8px 16px; }
 .btn--block { width: 100%; }
+.back-btn { min-height: 32px; padding: 4px 12px; margin-bottom: var(--s-sm); font-size: 12px; }
 
 .icon-btn {
   width: 40px; height: 40px; border-radius: var(--r-full); border: 0; cursor: pointer;

@@ -8,15 +8,25 @@
   .signin__hero { padding: var(--s-xl); }
   .signin__title { font-size: 36px; }
   .auth-card { margin: 0 var(--s-xl) var(--s-xl); max-width: none; }
-  .hero__title { font-size: 28px; }
-  .stats { grid-template-columns: 1fr 1fr; }
-  .stat--dark { grid-column: 1 / -1; }
-  .hero__actions .btn { flex: 1 1 auto; }
+  .user-chip__name { display: none; }
+  .hero-band { padding: var(--s-md) 0; }
+  .hero__title { font-size: 22px; }
+  .hero__cta { flex: 1 1 100%; }
+  .hero__cta .btn, .hero__actions .btn { flex: 1 1 0; }
+  .hero__actions .btn:first-child { flex-basis: 100%; }
+  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-xs); }
+  .stat { padding: var(--s-xs) var(--s-sm); }
+  .stat .caption { font-size: 11px; }
+  .stat strong { font-size: 15px; }
+  .page__body { padding-top: var(--s-xl); }
 }
 
 @media (max-width: 424px) {
-  .container { padding: 0 var(--s-md); }
-  .nav__actions .avatar { display: none; }
+  .container { padding-inline: var(--s-md); }
+  .logo { font-size: 17px; }
+  .nav__actions { gap: var(--s-xs); }
+  .icon-btn { width: 36px; height: 36px; }
+  .user-chip__out { padding: 0 var(--s-xs); }
   .form__pair { grid-template-columns: 1fr; }
   .row__end { max-width: 40%; }
 }
