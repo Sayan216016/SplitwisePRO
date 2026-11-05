@@ -24,7 +24,18 @@
   position: relative;
   z-index: 1;
 }
-.signin__google-icon { flex-shrink: 0; }
+.signin__google-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border-radius: var(--r-full);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+.signin__google-icon { width: 20px; height: 20px; display: block; }
 .signin__theme { position: absolute; top: var(--s-md); right: var(--s-md); }
 .signin__hero { padding: var(--s-section); color: var(--on-primary); }
 .signin__title { font-size: 52px; line-height: 1.15; color: var(--on-primary); margin: var(--s-xxl) 0 var(--s-md); }
