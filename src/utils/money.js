@@ -54,12 +54,34 @@ export function balanceDelta({ paidBy, split }, sign = 1) {
   return out;
 }
 
-/** Net paise per friend across shared groups (positive = they owe you). Uses group balances only. */
+const pairKey = (a, b) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+
+// Per-pair debts ("a|b" with a < b; positive = b owes a). Settled within this one expense only,
+// so people owe its actual payers and the pair totals always match balanceDelta to the paisa.
+export function pairDelta(expense, sign = 1) {
+  const out = {};
+  for (const { from, to, amount } of simplifyDebts(balanceDelta(expense))) {
+    const k = pairKey(from, to);
+    out[k] = (out[k] || 0) + sign * (to < from ? amount : -amount);
+  }
+  return out;
+}
+
+// Groups saved before `pairs` existed fall back to simplified debts.
+export function groupDebts(group) {
+  if (group.simplify || !group.pairs) return simplifyDebts(group.balances || {});
+  return Object.entries(group.pairs).filter(([, v]) => v).map(([k, v]) => {
+    const [a, b] = k.split("|");
+    return v > 0 ? { from: b, to: a, amount: v } : { from: a, to: b, amount: -v };
+  }).sort((x, y) => y.amount - x.amount);
+}
+
+/** Net paise per friend across shared groups (positive = they owe you). */
 export function aggregateFriendBalances(myUid, groups) {
   const net = {};
   for (const g of groups) {
     if (!g.balances || !g.memberIds?.includes(myUid)) continue;
-    for (const { from, to, amount } of simplifyDebts(g.balances)) {
+    for (const { from, to, amount } of groupDebts(g)) {
       if (from === myUid) net[to] = (net[to] || 0) - amount;
       else if (to === myUid) net[from] = (net[from] || 0) + amount;
     }
@@ -67,12 +89,12 @@ export function aggregateFriendBalances(myUid, groups) {
   return net;
 }
 
-/** Per shared group: the simplified debt between you and one friend (net > 0 = they owe you). */
+/** Per shared group: the debt between you and one friend (net > 0 = they owe you). */
 export function friendGroupDebts(myUid, friendUid, groups) {
   return groups
     .filter((g) => g.memberIds?.includes(myUid) && g.memberIds.includes(friendUid))
     .map((group) => {
-      const debt = simplifyDebts(group.balances || {}).find((d) =>
+      const debt = groupDebts(group).find((d) =>
         (d.from === myUid && d.to === friendUid) || (d.from === friendUid && d.to === myUid)) || null;
       return { group, debt, net: !debt ? 0 : debt.to === myUid ? debt.amount : -debt.amount };
     });

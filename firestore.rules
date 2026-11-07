@@ -20,7 +20,10 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid
         && request.auth.uid in request.resource.data.memberIds;
       allow update: if signedIn() && (
-        request.auth.uid in resource.data.memberIds
+        (request.auth.uid in resource.data.memberIds
+          // Soft delete (the `deleted` flag) is the creator's call only.
+          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['deleted'])
+              || resource.data.createdBy == request.auth.uid))
         // Invited user claiming their own pending invite.
         || (myEmail() in resource.data.pendingEmails
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds', 'pendingEmails', 'members', 'updatedAt'])
@@ -39,9 +42,7 @@ service cloud.firestore {
         allow update: if isMember(gid) && validAmount()
           && resource.data.createdBy == request.auth.uid
           && request.resource.data.createdBy == resource.data.createdBy;
-        // Author, or the group creator when deleting the whole group.
-        allow delete: if isMember(gid)
-          && (resource.data.createdBy == request.auth.uid || get(groupPath(gid)).data.createdBy == request.auth.uid);
+        allow delete: if isMember(gid) && resource.data.createdBy == request.auth.uid;
       }
 
       match /activity/{aid} {

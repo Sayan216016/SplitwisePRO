@@ -1,9 +1,9 @@
 import {
-  collection, collectionGroup, doc, getDocs, setDoc, query, where, orderBy, limit,
+  collection, collectionGroup, doc, getDocs, setDoc, updateDoc, query, where, orderBy, limit,
   onSnapshot, writeBatch, runTransaction, serverTimestamp, arrayUnion, arrayRemove,
 } from "firebase/firestore";
 import { db } from "../config/firebase.js";
-import { balanceDelta, validateExpense, formatINR } from "../utils/money.js";
+import { balanceDelta, pairDelta, validateExpense, formatINR } from "../utils/money.js";
 
 const toList = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 const groupRef = (gid) => doc(db, "groups", gid);
@@ -49,7 +49,7 @@ export async function findUserByEmail(email) {
 export async function claimInvites(user) {
   const me = profileOf(user);
   const snap = await getDocs(query(collection(db, "groups"), where("pendingEmails", "array-contains", me.email)));
-  await Promise.all(snap.docs.map((d) => {
+  await Promise.all(snap.docs.filter((d) => !d.data().deleted).map((d) => {
     const g = d.data();
     const batch = writeBatch(db);
     batch.update(d.ref, {
@@ -65,16 +65,18 @@ export async function claimInvites(user) {
 
 // ─── Groups ───
 
+// cb(visible, all): `all` includes soft-deleted groups, used only to suggest contacts.
 export function subscribeGroups(uid, cb, onError) {
   const q = query(collection(db, "groups"), where("memberIds", "array-contains", uid));
   return onSnapshot(q, (snap) => {
     const ms = (g) => g.updatedAt?.toMillis?.() ?? Date.now();
-    cb(toList(snap).sort((a, b) => ms(b) - ms(a)));
+    const all = toList(snap).sort((a, b) => ms(b) - ms(a));
+    cb(all.filter((g) => !g.deleted), all);
   }, onError);
 }
 
 export function subscribeGroup(gid, cb, onError) {
-  return onSnapshot(groupRef(gid), (d) => cb(d.exists() ? { id: d.id, ...d.data() } : null), onError);
+  return onSnapshot(groupRef(gid), (d) => cb(d.exists() && !d.data().deleted ? { id: d.id, ...d.data() } : null), onError);
 }
 
 export async function createGroup(user, { name, members, pendingEmails }) {
@@ -89,6 +91,7 @@ export async function createGroup(user, { name, members, pendingEmails }) {
     members: Object.fromEntries(all.map((m) => [m.uid, memberInfo(m)])),
     pendingEmails,
     balances: {},
+    pairs: {},
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -112,13 +115,15 @@ export async function addMembers(gid, group, user, { members, pendingEmails }) {
   await batch.commit();
 }
 
-export async function deleteGroup(gid) {
-  // shortcut: one batch caps at 500 writes; switch to chunked deletes if a group can exceed ~499 expenses.
-  // Activity docs are kept as history; their group link will show "not found".
-  const expenses = await getDocs(collection(groupRef(gid), "expenses"));
+// Soft delete: hidden everywhere, but its members stay suggestable as contacts.
+export function deleteGroup(gid) {
+  return updateDoc(groupRef(gid), { deleted: true, updatedAt: serverTimestamp() });
+}
+
+export async function setSimplify(gid, group, user, simplify) {
   const batch = writeBatch(db);
-  expenses.docs.forEach((d) => batch.delete(d.ref));
-  batch.delete(groupRef(gid));
+  batch.update(groupRef(gid), { simplify, updatedAt: serverTimestamp() });
+  batch.set(...activityDoc(gid, group, user, `turned ${simplify ? "on" : "off"} simplify debts`));
   await batch.commit();
 }
 
@@ -141,7 +146,13 @@ export async function saveExpense(gid, user, data, expenseId) {
     const balances = { ...group.balances };
     if (old) applyDelta(balances, balanceDelta(old, -1));
     applyDelta(balances, balanceDelta(data));
-    tx.update(groupRef(gid), { balances, updatedAt: serverTimestamp() });
+    const update = { balances, updatedAt: serverTimestamp() };
+    if (group.pairs) {
+      update.pairs = { ...group.pairs };
+      if (old) applyDelta(update.pairs, pairDelta(old, -1));
+      applyDelta(update.pairs, pairDelta(data));
+    }
+    tx.update(groupRef(gid), update);
     tx.set(eRef, {
       ...data,
       createdBy: old?.createdBy ?? user.uid,
@@ -161,7 +172,9 @@ export async function deleteExpense(gid, user, expenseId) {
     if (!old) return;
     const balances = { ...group.balances };
     applyDelta(balances, balanceDelta(old, -1));
-    tx.update(groupRef(gid), { balances, updatedAt: serverTimestamp() });
+    const update = { balances, updatedAt: serverTimestamp() };
+    if (group.pairs) applyDelta((update.pairs = { ...group.pairs }), pairDelta(old, -1));
+    tx.update(groupRef(gid), update);
     tx.delete(eRef);
     tx.set(...activityDoc(gid, group, user, `deleted ${old.type === "payment" ? "a payment" : `“${old.description}”`} (${formatINR(old.amount)})`));
   });

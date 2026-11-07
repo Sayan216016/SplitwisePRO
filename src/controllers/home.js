@@ -2,11 +2,12 @@ import { findUserByEmail, subscribeGroups, subscribeActivity, createGroup, saveE
 import { renderHome } from "../views/home.js";
 import { homeSkeleton } from "../components/skeletons.js";
 import { openGroupModal, openExpenseModal } from "../components/popups.js";
-import { toast } from "../utils/helpers.js";
+import { toast, contactsOf } from "../utils/helpers.js";
 import { app, setApp, navigate, on, onError, settle, bindChrome } from "./shared.js";
 
 export function mountHome(user) {
   let groups = null;
+  let allGroups = [];
   let activity = null;
   let balanceTab = "friends";
   let balanceFilter = "all";
@@ -39,6 +40,7 @@ export function mountHome(user) {
     on('[data-action="new-group"]', () => openGroupModal({
       selfEmail: user.email.toLowerCase(),
       findUser: findUserByEmail,
+      contacts: contactsOf(user.uid, allGroups),
       onSave: async (d) => navigate(`/group/${await createGroup(user, d)}`),
     }));
     on('[data-action="add-expense"]', () => groups.length
@@ -51,7 +53,7 @@ export function mountHome(user) {
   };
 
   app.addEventListener("click", onBalanceUi);
-  const unsubGroups = subscribeGroups(user.uid, (g) => { groups = g; render(); }, onError);
+  const unsubGroups = subscribeGroups(user.uid, (g, all) => { groups = g; allGroups = all; render(); }, onError);
   render();
   return () => {
     unsubGroups();

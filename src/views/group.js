@@ -1,6 +1,6 @@
 import { renderHeader, avatar } from "../components/layout.js";
 import { escapeHtml, memberList, timeAgo } from "../utils/helpers.js";
-import { formatINR, simplifyDebts } from "../utils/money.js";
+import { formatINR, groupDebts } from "../utils/money.js";
 
 export function renderNotFound(user) {
   return `${renderHeader(user)}<main class="page"><div class="container page__body">
@@ -39,7 +39,7 @@ export function renderGroup({ user, group, expenses, hasMore = false }) {
   const members = memberList(group);
   const name = (uid) => (uid === user.uid ? "You" : group.members?.[uid]?.name || "Someone");
   const balances = group.balances || {};
-  const debts = simplifyDebts(balances);
+  const debts = groupDebts(group);
   const pending = group.pendingEmails || [];
 
   return `${renderHeader(user)}
@@ -72,6 +72,8 @@ export function renderGroup({ user, group, expenses, hasMore = false }) {
             <span class="debt__amount">${formatINR(d.amount)}</span>
             <button class="btn btn--outline" type="button" data-settle="${i}">Settle</button>
           </li>`).join("")}</ul>` : `<p class="muted">Everyone is settled up.</p>`}
+          <label class="member-input member-input--check"><input type="checkbox" data-action="toggle-simplify" ${group.simplify ? "checked" : ""}>
+            <span>Simplify debts <span class="caption muted">— fewest payments, may route money through others</span></span></label>
         </section>
         <section>
           <p class="eyebrow">Balances</p>

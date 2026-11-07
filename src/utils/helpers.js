@@ -8,6 +8,13 @@ export const initials = (name = "?") =>
 
 export const memberList = (group) => group.memberIds.map((uid) => ({ uid, ...group.members?.[uid] }));
 
+// Everyone you've shared a group with (including deleted groups), minus you, sorted by name.
+export function contactsOf(uid, groups) {
+  const byUid = {};
+  for (const g of groups) for (const m of memberList(g)) if (m.uid !== uid && m.email) byUid[m.uid] = m;
+  return Object.values(byUid).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+}
+
 let toastTimer;
 export function toast(message, kind = "info") {
   const el = document.getElementById("toast");

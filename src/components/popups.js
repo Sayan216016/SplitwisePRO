@@ -75,7 +75,7 @@ function lockForm(root, authorName) {
 
 // ─── Create group / add members ───
 
-export function openGroupModal({ group, selfEmail, findUser, onSave }) {
+export function openGroupModal({ group, selfEmail, findUser, contacts = [], onSave }) {
   const picked = [];
   const root = openModal(`<form class="form" novalidate>
     <h2 class="modal__title">${group ? "Add members" : "Create a group"}</h2>
@@ -84,9 +84,10 @@ export function openGroupModal({ group, selfEmail, findUser, onSave }) {
     <div class="field">
       <label class="field__label" for="member-email">Add people by email</label>
       <div class="input-row">
-        <input class="input" id="member-email" name="email" type="email" placeholder="friend@gmail.com" autocomplete="off">
+        <input class="input" id="member-email" name="email" type="email" placeholder="Name or email" autocomplete="off" list="member-suggestions">
         <button class="btn btn--outline" type="button" data-find>Add</button>
       </div>
+      <datalist id="member-suggestions"></datalist>
       <p class="field__hint" data-find-msg aria-live="polite"></p>
     </div>
     <ul class="chip-list" data-picked></ul>
@@ -96,25 +97,30 @@ export function openGroupModal({ group, selfEmail, findUser, onSave }) {
   const emailInput = $('[name="email"]');
   const msg = $("[data-find-msg]");
 
+  const taken = () => new Set([
+    selfEmail,
+    ...(group ? memberList(group).map((m) => m.email) : []),
+    ...(group?.pendingEmails || []),
+    ...picked.map((p) => p.email),
+  ]);
+
   const draw = () => {
     $("[data-picked]").innerHTML = picked.map((p, i) => `<li class="chip">
       ${escapeHtml(p.name || p.email)}${p.uid ? "" : ` <em>· invite pending</em>`}
       <button type="button" data-remove="${i}" aria-label="Remove ${escapeHtml(p.email)}">✕</button></li>`).join("");
+    const t = taken();
+    $("#member-suggestions").innerHTML = contacts.filter((c) => !t.has(c.email))
+      .map((c) => `<option value="${escapeHtml(c.email)}">${escapeHtml(c.name)}</option>`).join("");
   };
 
   async function add() {
     const email = emailInput.value.trim().toLowerCase();
     if (!isEmail(email)) return (msg.textContent = "Enter a valid email");
-    const taken = new Set([
-      selfEmail,
-      ...(group ? memberList(group).map((m) => m.email) : []),
-      ...(group?.pendingEmails || []),
-      ...picked.map((p) => p.email),
-    ]);
-    if (taken.has(email)) return (msg.textContent = "Already in this group");
-    msg.textContent = "Searching…";
+    if (taken().has(email)) return (msg.textContent = "Already in this group");
+    const known = contacts.find((c) => c.email === email);
+    msg.textContent = known ? "" : "Searching…";
     try {
-      const u = await findUser(email);
+      const u = known ? { uid: known.uid, displayName: known.name, photoURL: known.photoURL } : await findUser(email);
       picked.push(u ? { uid: u.uid, email, name: u.displayName, photoURL: u.photoURL } : { email });
       msg.textContent = u ? `Added ${u.displayName}` : "Not signed up yet — they'll join automatically when they sign in with this email.";
       emailInput.value = "";
@@ -124,7 +130,12 @@ export function openGroupModal({ group, selfEmail, findUser, onSave }) {
     }
   }
 
+  draw();
   $("[data-find]").addEventListener("click", add);
+  // Picking a suggestion fills in a known contact's email — add it straight away.
+  emailInput.addEventListener("input", () => {
+    if (contacts.some((c) => c.email === emailInput.value.trim().toLowerCase())) add();
+  });
   emailInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();

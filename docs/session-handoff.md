@@ -29,6 +29,14 @@ Read this first in a new conversation. Architecture lives in `architecture.md`, 
 - ESLint 9 flat config (`npm run lint`), runs in CI before tests. `.editorconfig`, `.env.example`, `engines.node >= 22`, real README.
 - **Link preview without image = WhatsApp cache**, not a code bug: the live page serves the tags and `og-image.png` (200, image/png, 88 KB). WhatsApp caches a preview per URL, so a URL shared before the tags were deployed keeps the old title and no image. Test with a fresh URL (e.g. `…/SplitwisePRO/?v=2`); Facebook's Sharing Debugger can force a re-scrape for the bare URL.
 
+## Session 4 — pairwise debts, soft delete, contact suggestions
+
+- **Bug report:** with A paying for A/B/C and S paying for A/B/C, B was told to pay only S (simplified). Not a math bug — greedy simplification on net balances. Fix: per-group **"Simplify debts"** checkbox (in "Who owes whom"), **default off = pairwise** (B owes A and S separately). Any member can flip it; logged in activity.
+- `groups.pairs` (`"uidA|uidB"`, sorted, positive = B owes A) is updated in the same transaction as `balances`. Per expense it's the simplified settlement of *that expense alone* (`pairDelta`), so pair totals always equal `balanceDelta` to the paisa (a naive pro-rata split across multiple payers drifted by paise). `groupDebts(group)` picks pairwise vs simplified; groups with no `pairs` field fall back to simplified and are never partially maintained.
+- **Soft delete:** deleting a group sets `deleted: true` (creator only, enforced in rules); `subscribeGroups` calls back `(visible, all)`, `subscribeGroup` treats deleted as not found, `claimInvites` skips deleted groups. Expenses are kept. The old "group creator may delete any expense" rule was removed (only hard delete needed it).
+- **Add-member suggestions:** `contactsOf(uid, allGroups)` = everyone you've shared a group with (including deleted groups), shown via a native `<datalist>` on the email field; picking one adds them without a lookup. Strangers still need an exact email.
+- **Rules changed — deploy manually:** `firebase deploy --only firestore:rules` (CI only deploys Pages).
+
 ## Product decisions (chosen by user)
 
 | Topic | Decision |
@@ -37,7 +45,9 @@ Read this first in a new conversation. Architecture lives in `architecture.md`, 
 | Payers | Multiple payers with amounts each |
 | Settling | Simplified debts + "Record payment" |
 | Unknown email | Pending invite, auto-join on sign-up |
-| Permissions | Any member adds expenses and members; only the expense's author edits/deletes it (others see it read-only); only creator deletes group |
+| Permissions | Any member adds expenses and members; only the expense's author edits/deletes it (others see it read-only); only creator deletes group (soft delete) |
+| Debts view | Pairwise by default; per-group "Simplify debts" toggle |
+| Member suggestions | Anyone you've ever shared a group with (deleted groups included) |
 | Extras | Dashboard, dark mode, activity feed |
 | Repo / base path | `SplitwisePRO` → `/SplitwisePRO/` |
 | Firebase config | GitHub Secrets → `VITE_FIREBASE_*` env vars (deviation from architecture.md's committed `firebase-config.js`) |
@@ -50,7 +60,7 @@ Read this first in a new conversation. Architecture lives in `architecture.md`, 
 - **Debt simplification** is computed client-side from balances (greedy largest-debtor → largest-creditor).
 - **Activity** docs live in `groups/{id}/activity` with a copied `memberIds` so the home feed is one collection-group query (needs the composite index in `firestore.indexes.json`). New members don't see activity from before they joined.
 - **User search** is exact-email only; rules allow `list` on `users` only with `limit <= 1` to prevent dumping all users.
-- **Group delete** removes expenses + group in one batch (cap ~499 expenses); activity history is kept.
+- **Group delete** is a soft delete (`deleted: true`); expenses and activity are kept.
 - Fonts: Montserrat (Gotham substitute) at 300/500/700.
 - **Live updates:** every screen uses Firestore `onSnapshot`; balances, expenses, group list and activity update without refresh. Open modals deliberately don't re-render (they live on `<body>`), so in-progress input is kept; saves still use fresh data via transactions.
 - **Firebase config needs only 4 keys** (`apiKey`, `authDomain`, `projectId`, `appId`). `storageBucket` / `messagingSenderId` are unused (no Storage, no FCM) — add them to `src/config/firebase.js`, `.env.example` and the workflow only if receipts or push notifications are built.
@@ -60,7 +70,8 @@ Read this first in a new conversation. Architecture lives in `architecture.md`, 
 ```
 users/{uid}                 { uid, email(lowercase), displayName, photoURL, updatedAt }
 groups/{gid}                { name, createdBy, memberIds[], members{uid:{name,email,photoURL}},
-                              pendingEmails[], balances{uid:paise}, createdAt, updatedAt }
+                              pendingEmails[], balances{uid:paise}, pairs{"a|b":paise}, simplify?, deleted?,
+                              createdAt, updatedAt }
 groups/{gid}/expenses/{eid} { type:"expense"|"payment", description, amount, paidBy{uid:paise},
                               split{uid:paise}, splitType, splitInput{uid:number}, createdBy, createdAt, updatedAt }
 groups/{gid}/activity/{aid} { groupId, groupName, memberIds[], actorId, actorName, text, createdAt }
