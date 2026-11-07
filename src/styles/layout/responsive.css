@@ -1,5 +1,6 @@
 @media (max-width: 1023px) {
   .group-grid { grid-template-columns: 1fr; }
+  .group-expenses, .group-debts, .group-grid > .side { grid-column: auto; grid-row: auto; }
 }
 
 @media (max-width: 767px) {
@@ -13,7 +14,14 @@
   .hero__title { font-size: 22px; }
   .hero__cta { flex: 1 1 100%; }
   .hero__cta .btn, .hero__actions .btn { flex: 1 1 0; }
-  .hero__actions .btn:first-child { flex-basis: 100%; }
+  .hero__actions { gap: var(--s-xs); margin-top: var(--s-sm); }
+  .hero__actions .btn { min-height: 36px; padding: 8px 6px; font-size: 12px; border-radius: var(--r-lg); white-space: nowrap; }
+  .group-debts { padding: var(--s-md); border-radius: var(--r-lg); }
+  .group-debts h2 { font-size: 18px; margin-bottom: var(--s-xxs); }
+  .debt { grid-template-columns: 1fr auto auto; padding: var(--s-xs) 0; }
+  .debt p { grid-column: auto; }
+  .debt__amount { font-size: 15px; }
+  .debt .btn { min-height: 32px; padding: 4px 12px; font-size: 12px; }
   .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-xs); }
   .stat { padding: var(--s-xs) var(--s-sm); }
   .stat .caption { font-size: 11px; }

@@ -1,4 +1,10 @@
-.group-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--s-xxl); align-items: start; }
+.group-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--s-xl) var(--s-xxl); align-items: start; }
+/* Debts come first in the DOM (top on mobile); on wide screens they sit in the right column above the side panel. */
+.group-expenses { grid-column: 1; grid-row: 1 / span 2; }
+.group-debts, .group-grid > .side { grid-column: 2; }
+.hero__top { display: flex; align-items: center; justify-content: space-between; gap: var(--s-sm); margin-bottom: var(--s-sm); }
+.hero__top .back-btn { margin-bottom: 0; }
+.hero-summary { border: 0; border-radius: var(--r-full); background: var(--canvas); padding: 6px 14px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
 .side { display: grid; gap: var(--s-xl); }
 .side .btn--danger { margin-top: var(--s-xl); }
 .debt { display: grid; grid-template-columns: 1fr auto; gap: var(--s-xxs) var(--s-sm); align-items: center; padding: var(--s-sm) 0; border-bottom: 1px solid var(--hairline); font-size: 14px; }
@@ -8,4 +14,5 @@
 /* Debts involving you stand out; everyone else's stay neutral. */
 .debt--owe p, .debt--owe .debt__amount { color: var(--error); }
 .debt--owed p, .debt--owed .debt__amount { color: var(--primary); }
+.debt--owe strong, .debt--owed strong { color: inherit; }
 .row--payment .icon-circle { background: var(--lime-panel); color: var(--forest); }

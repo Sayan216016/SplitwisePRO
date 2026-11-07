@@ -17,6 +17,7 @@ export function mountGroup(user, gid) {
     setApp(renderGroup({ user, group, expenses, hasMore: expenses.length >= expenseLimit }));
     bindChrome();
     on('[data-action="load-more-expenses"]', loadMore);
+    on('[data-action="scroll-debts"]', () => document.getElementById("debts").scrollIntoView({ behavior: "smooth", block: "start" }));
     const save = (id) => (d) => saveExpense(gid, user, d, id);
 
     on('[data-action="add-expense"]', () => openExpenseModal({ group, user, onSave: save() }));
