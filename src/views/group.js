@@ -1,44 +1,14 @@
 import { renderHeader, avatar } from "../components/layout.js";
-import { escapeHtml, memberList, timeAgo } from "../utils/helpers.js";
+import { balanceText, expenseRow, notFound } from "../components/ui.js";
+import { escapeHtml, memberList, personName, plural } from "../utils/helpers.js";
 import { formatINR, groupDebts } from "../utils/money.js";
-import { balanceText } from "./home.js";
 
-export function renderNotFound(user) {
-  return `${renderHeader(user)}<main class="page"><div class="container page__body">
-    <div class="empty"><h3>Group not found</h3><p>It may have been deleted, or you're not a member.</p>
-    <a class="btn btn--primary" href="#/">Back to groups</a></div></div></main>`;
-}
-
-export function expenseRow(e, user, name, groupName = "") {
-  const where = groupName ? `${escapeHtml(groupName)} · ` : "";
-  const by = `added by ${e.createdBy === user.uid ? "you" : escapeHtml(name(e.createdBy))} · `;
-  if (e.type === "payment") {
-    const [from] = Object.keys(e.paidBy);
-    const [to] = Object.keys(e.split);
-    return `<li><button class="row row--payment" type="button" data-edit-expense="${escapeHtml(e.id)}">
-      <span class="icon-circle" aria-hidden="true">₹</span>
-      <span class="row__main"><strong>${escapeHtml(name(from))} paid ${escapeHtml(name(to))}</strong>
-        <span class="caption muted">${where}${by}${timeAgo(e.createdAt)}</span></span>
-      <span class="row__end"><strong>${formatINR(e.amount)}</strong></span>
-    </button></li>`;
-  }
-  const payers = Object.keys(e.paidBy);
-  const paidText = payers.length > 1 ? `${payers.length} people paid` : `${name(payers[0])} paid`;
-  const mine = (e.paidBy[user.uid] || 0) - (e.split[user.uid] || 0);
-  const end = mine > 0 ? `<span class="pos">you lent ${formatINR(mine)}</span>`
-    : mine < 0 ? `<span class="neg">you borrowed ${formatINR(-mine)}</span>`
-      : `<span class="muted">not involved</span>`;
-  return `<li><button class="row" type="button" data-edit-expense="${escapeHtml(e.id)}">
-    <span class="icon-circle icon-circle--inactive" aria-hidden="true">${escapeHtml(e.description[0]?.toUpperCase() || "•")}</span>
-    <span class="row__main"><strong>${escapeHtml(e.description)}</strong>
-      <span class="caption muted">${where}${escapeHtml(paidText)} ${formatINR(e.amount)} · ${by}${timeAgo(e.createdAt)}</span></span>
-    <span class="row__end caption">${end}</span>
-  </button></li>`;
-}
+export const renderNotFound = (user) =>
+  notFound(user, "Group not found", "It may have been deleted, or you're not a member.", "Back to groups");
 
 export function renderGroup({ user, group, expenses, hasMore = false }) {
   const members = memberList(group);
-  const name = (uid) => (uid === user.uid ? "You" : group.members?.[uid]?.name || "Someone");
+  const name = (uid) => personName(uid, user, group);
   const balances = group.balances || {};
   const debts = groupDebts(group);
   const pending = group.pendingEmails || [];
@@ -53,7 +23,7 @@ export function renderGroup({ user, group, expenses, hasMore = false }) {
         </div>
         <h1 class="hero__title">${escapeHtml(group.name)}</h1>
         <div class="avatars">${members.map((m) => avatar(m)).join("")}
-          <span class="caption">${members.length} member${members.length === 1 ? "" : "s"}${pending.length ? ` · ${pending.length} invite${pending.length === 1 ? "" : "s"} pending` : ""}</span></div>
+          <span class="caption">${plural(members.length, "member")}${pending.length ? ` · ${plural(pending.length, "invite")} pending` : ""}</span></div>
         <div class="hero__actions">
           <button class="btn btn--primary btn--on-green" type="button" data-action="add-expense">Add expense</button>
           <button class="btn btn--secondary" type="button" data-action="settle-up">Settle up</button>
@@ -74,7 +44,7 @@ export function renderGroup({ user, group, expenses, hasMore = false }) {
         </section>
       <section class="group-expenses">
         <h2>Expenses</h2>
-        ${expenses.length ? `<ul class="rows">${expenses.map((e) => expenseRow(e, user, name)).join("")}</ul>
+        ${expenses.length ? `<ul class="rows">${expenses.map((e) => expenseRow(e, user, group)).join("")}</ul>
           ${hasMore ? `<button class="btn btn--outline load-more" type="button" data-action="load-more-expenses">Load more</button>` : ""}`
           : `<div class="empty"><h3>No expenses yet</h3><p>Add the first one — dinner, cab, rent, anything.</p></div>`}
       </section>

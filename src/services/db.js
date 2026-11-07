@@ -4,6 +4,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase.js";
 import { balanceDelta, pairDelta, validateExpense, formatINR } from "../utils/money.js";
+import { shortName } from "../utils/helpers.js";
 
 const toList = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 const groupRef = (gid) => doc(db, "groups", gid);
@@ -108,7 +109,7 @@ export async function addMembers(gid, group, user, { members, pendingEmails }) {
   if (members.length) update.memberIds = arrayUnion(...members.map((m) => m.uid));
   if (pendingEmails.length) update.pendingEmails = arrayUnion(...pendingEmails);
   for (const m of members) update[`members.${m.uid}`] = memberInfo(m);
-  const names = [...members.map((m) => m.name), ...pendingEmails].join(", ");
+  const names = [...members.map((m) => shortName(m.name)), ...pendingEmails].join(", ");
   const batch = writeBatch(db);
   batch.update(groupRef(gid), update);
   batch.set(...activityDoc(gid, { ...group, memberIds: [...group.memberIds, ...members.map((m) => m.uid)] }, user, `added ${names}`));

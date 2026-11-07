@@ -1,7 +1,7 @@
 import { signOutUser } from "../services/auth.js";
 import { saveExpense, deleteExpense } from "../services/db.js";
 import { openExpenseModal, openSettleModal } from "../components/popups.js";
-import { toast } from "../utils/helpers.js";
+import { toast, shortName } from "../utils/helpers.js";
 
 export const app = document.getElementById("app");
 export const EXPENSE_PAGE = 50;
@@ -30,7 +30,7 @@ export function bindChrome() {
 
 // Only the author may edit or delete; everyone else gets a read-only view.
 export function openExistingExpense(group, user, e) {
-  const author = e.createdBy === user.uid ? null : group.members?.[e.createdBy]?.name || "another member";
+  const author = e.createdBy === user.uid ? null : shortName(group.members?.[e.createdBy]?.name) || "another member";
   const opts = {
     group, user, readOnlyBy: author,
     onSave: (d) => saveExpense(group.id, user, d, e.id),

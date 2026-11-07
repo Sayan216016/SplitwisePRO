@@ -83,7 +83,9 @@ groups/{gid}/activity/{aid} { groupId, groupName, memberIds[], actorId, actorNam
 - `src/controllers/` — one `mount*` per route (`signin`, `home`, `group`, `friend`), each returns its cleanup; `shared.js` holds `#app` helpers + `openExistingExpense`.
 - `src/services/db.js` — all Firestore I/O; `auth.js` — sign-in + post-login profile/invite claim.
 - `src/views/` — `signin.js`, `home.js`, `group.js`, `friend.js` (HTML strings).
-- `src/components/popups.js` — group/members, expense (with group chooser), settle-up modals.
+- `src/components/popups.js` — group/members, expense (with group chooser), settle-up and confirm modals. All share `runAction` (disable → inline error → close), `confirmPanel`/`bindConfirm`, `actions`, `amountField`, `memberOptions`.
+- `src/components/ui.js` — view pieces shared across pages: `balanceText`, `expenseRow`, `groupRow`, `iconCircle`, `notFound`. Pages import from here, never from each other.
+- `src/utils/helpers.js` — `personName` ("You" / short name), `shortName`, `plural`, `contactsOf`, `memberList`.
 - `src/components/layout.js` — header + user/sign-out pill.
 - `src/styles/layout/responsive.css` — all breakpoints (1023 / 767 / 424).
 - `public/` — share image (`og-image.svg` source, `og-image.png` used in meta tags).

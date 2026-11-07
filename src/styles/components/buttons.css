@@ -10,9 +10,10 @@
 .btn--on-green { background: var(--lime-panel); color: var(--forest); }
 .btn--on-green:hover { background: var(--lime-hero); }
 .btn--secondary { background: var(--canvas-soft); color: var(--primary); }
-.btn--outline { background: transparent; color: var(--primary); border: 1px solid var(--hairline-strong); border-radius: var(--r-lg); padding: 8px 16px; }
+.btn--outline, .btn--danger { background: transparent; border: 1px solid var(--hairline-strong); border-radius: var(--r-lg); padding: 8px 16px; }
+.btn--outline { color: var(--primary); }
+.btn--danger { color: var(--error); }
 .btn--outline-light { color: var(--on-primary); border-color: rgb(255 255 255 / 0.5); }
-.btn--danger { background: transparent; color: var(--error); border: 1px solid var(--hairline-strong); border-radius: var(--r-lg); padding: 8px 16px; }
 .btn--block { width: 100%; }
 .back-btn { min-height: 32px; padding: 4px 12px; margin-bottom: var(--s-sm); font-size: 12px; }
 

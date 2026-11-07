@@ -1,7 +1,26 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { computeSplit, balanceDelta, simplifyDebts, sum, aggregateFriendBalances, friendGroupDebts, pairDelta, groupDebts } from "./money.js";
-import { contactsOf } from "./helpers.js";
+import { contactsOf, shortName, plural, personName } from "./helpers.js";
+
+test("plural and personName", () => {
+  assert.equal(plural(1, "member"), "1 member");
+  assert.equal(plural(3, "member"), "3 members");
+  assert.equal(plural(2, "person", "people"), "2 people");
+  const group = { members: { b: { name: "Sayan Mukherjee" } } };
+  assert.equal(personName("a", { uid: "a" }, group), "You");
+  assert.equal(personName("b", { uid: "a" }, group), "Sayan M");
+  assert.equal(personName("zz", { uid: "a" }, group), "Someone");
+});
+
+test("shortName: first name + surname initial", () => {
+  assert.equal(shortName("Sayan Mukherjee"), "Sayan M");
+  assert.equal(shortName("Ayan Mukherjee."), "Ayan M");
+  assert.equal(shortName("  Ravi  Kumar Singh "), "Ravi S");
+  assert.equal(shortName("Madonna"), "Madonna");
+  assert.equal(shortName("a.b@x.in"), "a.b@x.in");
+  assert.equal(shortName(undefined), "");
+});
 
 const addInto = (acc, d) => {
   for (const [k, v] of Object.entries(d)) acc[k] = (acc[k] || 0) + v;

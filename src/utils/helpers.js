@@ -6,6 +6,18 @@ export const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 export const initials = (name = "?") =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
 
+// "Sayan Mukherjee" → "Sayan M". Emails and single names stay as they are.
+export const shortName = (name = "") => {
+  const w = String(name).trim().split(/\s+/);
+  return w.length > 1 && !name.includes("@") ? `${w[0]} ${w.at(-1)[0].toUpperCase()}` : name;
+};
+
+// "You" for the signed-in user, otherwise the member's short name.
+export const personName = (uid, user, group) =>
+  uid === user.uid ? "You" : shortName(group?.members?.[uid]?.name) || "Someone";
+
+export const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
+
 export const memberList = (group) => group.memberIds.map((uid) => ({ uid, ...group.members?.[uid] }));
 
 // Everyone you've shared a group with (including deleted groups), minus you, sorted by name.

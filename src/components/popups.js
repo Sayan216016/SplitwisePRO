@@ -1,69 +1,82 @@
 import { openModal, closeModal } from "./modal.js";
-import { escapeHtml, isEmail, memberList } from "../utils/helpers.js";
+import { escapeHtml, isEmail, memberList, personName, plural } from "../utils/helpers.js";
 import { computeSplit, toPaise, formatINR, sum } from "../utils/money.js";
 import { avatar } from "./layout.js";
+import { iconCircle } from "./ui.js";
 
 const SPLIT_TYPES = { equal: "Equally", exact: "Exact ₹", percent: "Percent", shares: "Shares" };
 
+// Every modal action: disable the button, show the error inline, close the modal on success.
+async function runAction(btn, errorEl, fn) {
+  btn.disabled = true;
+  errorEl.textContent = "";
+  try {
+    await fn();
+    closeModal();
+  } catch (err) {
+    errorEl.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function bindSubmit(root, fn) {
   const form = root.querySelector("form");
-  const error = root.querySelector("[data-error]");
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const btn = form.querySelector('[type="submit"]');
-    btn.disabled = true;
-    error.textContent = "";
-    try {
-      await fn(new FormData(form));
-      closeModal();
-    } catch (err) {
-      error.textContent = err.message;
-    } finally {
-      btn.disabled = false;
-    }
+    runAction(form.querySelector('[type="submit"]'), root.querySelector("[data-error]"), () => fn(new FormData(form)));
   });
 }
 
+const errorLine = `<p class="form__error" data-error role="alert"></p>`;
+
 const actions = (label, extra = "") =>
-  `<p class="form__error" data-error role="alert"></p>
-   <div class="form__actions">${extra}<button class="btn btn--primary" type="submit">${label}</button></div>`;
+  `${errorLine}<div class="form__actions">${extra}<button class="btn btn--primary" type="submit">${label}</button></div>`;
 
 const deleteBtn = `<button class="btn btn--danger" type="button" data-delete>Delete</button>`;
+
+const confirmPanel = (title, message, confirmLabel) => `<div class="delete-confirm" data-confirm-panel>
+    <h2 class="modal__title">${escapeHtml(title)}</h2>
+    <p class="muted">${escapeHtml(message)}</p>
+    ${errorLine}
+    <div class="form__actions">
+      <button class="btn btn--outline" type="button" data-cancel>Cancel</button>
+      <button class="btn btn--danger" type="button" data-confirm>${escapeHtml(confirmLabel)}</button>
+    </div>
+  </div>`;
+
+// Wires a rendered confirmPanel; `onCancel` defaults to closing the modal.
+function bindConfirm(panel, onConfirm, onCancel = () => closeModal()) {
+  panel.querySelector("[data-cancel]").addEventListener("click", onCancel);
+  const btn = panel.querySelector("[data-confirm]");
+  btn.addEventListener("click", () => runAction(btn, panel.querySelector("[data-error]"), onConfirm));
+}
 
 function bindDelete(root, onDelete, what) {
   root.querySelector("[data-delete]")?.addEventListener("click", () => {
     const form = root.querySelector("form");
-    if (!form || root.querySelector("[data-delete-confirm]")) return;
+    if (!form || root.querySelector("[data-confirm-panel]")) return;
     form.hidden = true;
-    root.insertAdjacentHTML("beforeend", `<div class="delete-confirm" data-delete-confirm>
-      <h2 class="modal__title">Delete this ${what}?</h2>
-      <p class="muted">This can't be undone.</p>
-      <p class="form__error" data-error role="alert"></p>
-      <div class="form__actions">
-        <button class="btn btn--outline" type="button" data-cancel>Cancel</button>
-        <button class="btn btn--danger" type="button" data-confirm>Delete</button>
-      </div>
-    </div>`);
-    const panel = root.querySelector("[data-delete-confirm]");
-    panel.querySelector("[data-cancel]").addEventListener("click", () => {
+    root.insertAdjacentHTML("beforeend", confirmPanel(`Delete this ${what}?`, "This can't be undone.", "Delete"));
+    const panel = root.querySelector("[data-confirm-panel]");
+    bindConfirm(panel, onDelete, () => {
       panel.remove();
       form.hidden = false;
     });
-    panel.querySelector("[data-confirm]").addEventListener("click", async () => {
-      const err = panel.querySelector("[data-error]");
-      const btn = panel.querySelector("[data-confirm]");
-      btn.disabled = true;
-      err.textContent = "";
-      try {
-        await onDelete();
-        closeModal();
-      } catch (e) {
-        err.textContent = e.message;
-        btn.disabled = false;
-      }
-    });
   });
 }
+
+export function openConfirmModal({ title, message, confirmLabel = "Delete", onConfirm }) {
+  const root = openModal(confirmPanel(title, message, confirmLabel));
+  root.querySelector("[data-cancel]").focus();
+  bindConfirm(root, onConfirm);
+}
+
+const amountField = (paise) => `<label class="field"><span class="field__label">Amount (₹)</span>
+  <input class="input" name="amount" type="number" min="0.01" step="0.01" required inputmode="decimal" value="${paise ? paise / 100 : ""}"></label>`;
+
+const memberOptions = (members, user, group, selected) => members.map((m) =>
+  `<option value="${m.uid}" ${m.uid === selected ? "selected" : ""}>${escapeHtml(personName(m.uid, user, group))}</option>`).join("");
 
 // View-only for anyone but the author: disable every control and say who can edit.
 function lockForm(root, authorName) {
@@ -208,7 +221,7 @@ export function openExpenseModal({ group, groups, user, expense, onSave, onDelet
   let splitType = e.splitType || "equal";
 
   const memberRow = (m, name, value, suffix) => `<label class="member-input">
-    <span>${escapeHtml(m.uid === user.uid ? "You" : m.name)}</span>
+    <span>${escapeHtml(personName(m.uid, user, current))}</span>
     <span class="member-input__field"><input class="input" type="number" min="0" step="any" name="${name}" data-uid="${m.uid}" value="${value ?? ""}" inputmode="decimal"><em>${suffix}</em></span>
   </label>`;
 
@@ -219,12 +232,11 @@ export function openExpenseModal({ group, groups, user, expense, onSave, onDelet
         ? `<div class="tabs" role="group" aria-label="Group">${choices.map((g) =>
           `<button type="button" class="tab" data-group-id="${escapeHtml(g.id)}" aria-pressed="${g === current}">${escapeHtml(g.name)}</button>`).join("")}</div>
           <p class="field__hint" data-group-hint ${current ? "hidden" : ""}>Pick a group to choose who paid and who's in.</p>`
-        : `<div class="group-fixed"><span class="icon-circle" aria-hidden="true">${escapeHtml(current.name[0]?.toUpperCase() || "G")}</span><strong>${escapeHtml(current.name)}</strong></div>`}
+        : `<div class="group-fixed">${iconCircle(current.name, "G")}<strong>${escapeHtml(current.name)}</strong></div>`}
     </div>
     <label class="field"><span class="field__label">Description</span>
       <input class="input" name="description" required maxlength="80" value="${escapeHtml(e.description || "")}" placeholder="Dinner"></label>
-    <label class="field"><span class="field__label">Amount (₹)</span>
-      <input class="input" name="amount" type="number" min="0.01" step="0.01" required inputmode="decimal" value="${e.amount ? e.amount / 100 : ""}"></label>
+    ${amountField(e.amount)}
     <div class="field" data-payer-field data-needs-group></div>
     <div class="field" data-needs-group>
       <span class="field__label">Split</span>
@@ -241,7 +253,7 @@ export function openExpenseModal({ group, groups, user, expense, onSave, onDelet
   function drawPayers() {
     $("[data-payer-field]").innerHTML = `<label class="field__label" for="payer">Paid by</label>
       <select class="input" id="payer" name="payer">
-        ${members.map((m) => `<option value="${m.uid}" ${(!multiPay && (payers[0] || user.uid) === m.uid) ? "selected" : ""}>${escapeHtml(m.uid === user.uid ? "You" : m.name)}</option>`).join("")}
+        ${memberOptions(members, user, current, multiPay ? null : payers[0] || user.uid)}
         <option value="__multi" ${multiPay ? "selected" : ""}>Multiple people</option>
       </select>
       <div class="member-inputs" data-payers ${multiPay ? "" : "hidden"}>
@@ -257,7 +269,7 @@ export function openExpenseModal({ group, groups, user, expense, onSave, onDelet
       if (splitType === "equal") {
         const on = saved ? saved[m.uid] > 0 : true;
         return `<label class="member-input member-input--check"><input type="checkbox" name="split" data-uid="${m.uid}" ${on ? "checked" : ""}>
-          <span>${escapeHtml(m.uid === user.uid ? "You" : m.name)}</span></label>`;
+          <span>${escapeHtml(personName(m.uid, user, current))}</span></label>`;
       }
       const def = splitType === "shares" ? 1 : "";
       return memberRow(m, "split", saved ? saved[m.uid] || "" : def, { exact: "₹", percent: "%", shares: "share(s)" }[splitType]);
@@ -286,7 +298,7 @@ export function openExpenseModal({ group, groups, user, expense, onSave, onDelet
     try {
       const { split } = build();
       const n = Object.keys(split).length;
-      hint.textContent = splitType === "equal" ? `${formatINR(Math.floor(sum(split) / n))} per person` : `Split across ${n} ${n === 1 ? "person" : "people"}`;
+      hint.textContent = splitType === "equal" ? `${formatINR(Math.floor(sum(split) / n))} per person` : `Split across ${plural(n, "person", "people")}`;
       hint.classList.remove("is-error");
     } catch (err) {
       hint.textContent = $('[name="amount"]').value ? err.message : "";
@@ -330,7 +342,7 @@ export function openSettleModal({ group, user, payment, suggestion, onSave, onDe
   const from = payment ? Object.keys(payment.paidBy)[0] : suggestion?.from ?? user.uid;
   const to = payment ? Object.keys(payment.split)[0] : suggestion?.to ?? members.find((m) => m.uid !== user.uid)?.uid;
   const amount = payment?.amount ?? suggestion?.amount;
-  const options = (sel) => members.map((m) => `<option value="${m.uid}" ${m.uid === sel ? "selected" : ""}>${escapeHtml(m.uid === user.uid ? "You" : m.name)}</option>`).join("");
+  const options = (sel) => memberOptions(members, user, group, sel);
 
   const root = openModal(`<form class="form" novalidate>
     <h2 class="modal__title">${payment ? "Edit payment" : "Record a payment"}</h2>
@@ -338,8 +350,7 @@ export function openSettleModal({ group, user, payment, suggestion, onSave, onDe
       <label class="field"><span class="field__label">Who paid</span><select class="input" name="from">${options(from)}</select></label>
       <label class="field"><span class="field__label">Paid to</span><select class="input" name="to">${options(to)}</select></label>
     </div>
-    <label class="field"><span class="field__label">Amount (₹)</span>
-      <input class="input" name="amount" type="number" min="0.01" step="0.01" required inputmode="decimal" value="${amount ? amount / 100 : ""}"></label>
+    ${amountField(amount)}
     ${actions("Save payment", payment ? deleteBtn : "")}
   </form>`);
   if (readOnlyBy) return lockForm(root, readOnlyBy);

@@ -1,7 +1,7 @@
 import { findUserByEmail, subscribeGroup, subscribeGroups, subscribeExpenses, addMembers, deleteGroup, saveExpense, setSimplify } from "../services/db.js";
 import { renderGroup, renderNotFound } from "../views/group.js";
 import { groupSkeleton } from "../components/skeletons.js";
-import { openGroupModal, openExpenseModal, openSettleModal } from "../components/popups.js";
+import { openGroupModal, openExpenseModal, openSettleModal, openConfirmModal } from "../components/popups.js";
 import { groupDebts } from "../utils/money.js";
 import { contactsOf } from "../utils/helpers.js";
 import { app, EXPENSE_PAGE, setApp, navigate, on, onError, settle, bindChrome, openExistingExpense } from "./shared.js";
@@ -31,15 +31,15 @@ export function mountGroup(user, gid) {
     }));
     app.querySelector('[data-action="toggle-simplify"]')?.addEventListener("change", (e) =>
       setSimplify(gid, group, user, e.target.checked).catch(onError));
-    on('[data-action="delete-group"]', async () => {
-      if (!confirm(`Delete "${group.name}" and all its expenses? This can't be undone.`)) return;
-      try {
+    on('[data-action="delete-group"]', () => openConfirmModal({
+      title: "Delete this group?",
+      message: `"${group.name}" and all its expenses will be deleted. This can't be undone.`,
+      confirmLabel: "Delete group",
+      onConfirm: async () => {
         await deleteGroup(gid);
         navigate("/");
-      } catch (e) {
-        onError(e);
-      }
-    });
+      },
+    }));
     app.querySelectorAll("[data-edit-expense]").forEach((btn) => btn.addEventListener("click", () =>
       openExistingExpense(group, user, expenses.find((x) => x.id === btn.dataset.editExpense))));
     const debts = groupDebts(group);

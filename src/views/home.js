@@ -1,12 +1,7 @@
 import { renderHeader } from "../components/layout.js";
-import { escapeHtml, timeAgo } from "../utils/helpers.js";
+import { balanceText, groupRow, iconCircle } from "../components/ui.js";
+import { escapeHtml, timeAgo, shortName, plural } from "../utils/helpers.js";
 import { formatINR, aggregateFriendBalances } from "../utils/money.js";
-
-export function balanceText(b) {
-  if (b > 0) return `<span class="pos">you are owed ${formatINR(b)}</span>`;
-  if (b < 0) return `<span class="neg">you owe ${formatINR(-b)}</span>`;
-  return `<span class="muted">settled up</span>`;
-}
 
 function buildFriends(uid, groups) {
   const nets = aggregateFriendBalances(uid, groups);
@@ -37,25 +32,17 @@ function renderActivity(activity) {
   if (!activity.length) return `<p class="muted">No activity yet.</p>`;
   return `<ul class="feed">${activity.map((a) => `<li class="feed__item">
     <a class="link-green" href="#/group/${escapeHtml(a.groupId)}">${escapeHtml(a.groupName)}</a>
-    <p><strong>${escapeHtml(a.actorName)}</strong> ${escapeHtml(a.text)}</p>
+    <p><strong>${escapeHtml(shortName(a.actorName))}</strong> ${escapeHtml(a.text)}</p>
     <span class="caption muted">${timeAgo(a.createdAt)}</span>
   </li>`).join("")}</ul>`;
 }
 
 const friendRow = (f) => `<li>
     <a class="row" href="#/friend/${escapeHtml(f.uid)}">
-      <span class="icon-circle" aria-hidden="true">${escapeHtml(f.name[0]?.toUpperCase() || "?")}</span>
-      <span class="row__main"><strong>${escapeHtml(f.name)}</strong>
-        <span class="caption muted">${f.groupCount} shared group${f.groupCount === 1 ? "" : "s"}</span></span>
+      ${iconCircle(f.name)}
+      <span class="row__main"><strong>${escapeHtml(shortName(f.name))}</strong>
+        <span class="caption muted">${plural(f.groupCount, "shared group")}</span></span>
       <span class="row__end">${balanceText(f.net)}</span>
-    </a></li>`;
-
-const groupRow = (g) => `<li>
-    <a class="row" href="#/group/${escapeHtml(g.id)}">
-      <span class="icon-circle" aria-hidden="true">${escapeHtml(g.name[0]?.toUpperCase() || "G")}</span>
-      <span class="row__main"><strong>${escapeHtml(g.name)}</strong>
-        <span class="caption muted">${g.memberIds.length} member${g.memberIds.length === 1 ? "" : "s"}</span></span>
-      <span class="row__end">${balanceText(g.net)}</span>
     </a></li>`;
 
 function viewTab(id, label, active) {
@@ -111,7 +98,7 @@ export function renderHome({ user, groups, activity, balanceTab = "friends", bal
     : !groups.length
     ? `<div class="empty"><h3>No groups yet</h3><p>Create a group for a trip, your flat or a dinner — or ask a friend to add you.</p></div>`
     : balanceTab === "groups"
-      ? renderBalanceList(groups.map((g) => ({ ...g, net: g.balances?.[user.uid] || 0 })), groupRow, balanceFilter, showSettled)
+      ? renderBalanceList(groups.map((g) => ({ ...g, net: g.balances?.[user.uid] || 0 })), (g) => groupRow(g, g.net), balanceFilter, showSettled)
       : renderBalanceList(buildFriends(user.uid, groups), friendRow, balanceFilter, showSettled);
 
   return `${renderHeader(user)}
