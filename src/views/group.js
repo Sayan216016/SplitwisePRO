@@ -67,7 +67,7 @@ export function renderGroup({ user, group, expenses, hasMore = false }) {
       <aside class="side">
         <section class="panel-mint">
           <h2>Who owes whom</h2>
-          ${debts.length ? `<ul class="debts">${debts.map((d, i) => `<li class="debt">
+          ${debts.length ? `<ul class="debts">${debts.map((d, i) => `<li class="debt${d.from === user.uid ? " debt--owe" : d.to === user.uid ? " debt--owed" : ""}">
             <p><strong>${escapeHtml(name(d.from))}</strong> ${d.from === user.uid ? "owe" : "owes"} <strong>${escapeHtml(name(d.to))}</strong></p>
             <span class="debt__amount">${formatINR(d.amount)}</span>
             <button class="btn btn--outline" type="button" data-settle="${i}">Settle</button>

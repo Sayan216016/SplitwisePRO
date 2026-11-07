@@ -4,5 +4,8 @@
 .debt { display: grid; grid-template-columns: 1fr auto; gap: var(--s-xxs) var(--s-sm); align-items: center; padding: var(--s-sm) 0; border-bottom: 1px solid var(--hairline); font-size: 14px; }
 .debt:last-child { border-bottom: 0; }
 .debt p { margin: 0; grid-column: 1 / -1; }
-.debt__amount { font-size: 20px; font-weight: 700; color: var(--primary); }
+.debt__amount { font-size: 20px; font-weight: 700; color: var(--ink); }
+/* Debts involving you stand out; everyone else's stay neutral. */
+.debt--owe p, .debt--owe .debt__amount { color: var(--error); }
+.debt--owed p, .debt--owed .debt__amount { color: var(--primary); }
 .row--payment .icon-circle { background: var(--lime-panel); color: var(--forest); }
