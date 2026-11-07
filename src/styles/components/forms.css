@@ -15,6 +15,15 @@
 .input:focus { outline: none; border-bottom: 2px solid var(--primary); }
 .input-row { display: flex; gap: var(--s-xs); }
 
+/* In-flow (not floating) so the scrolling modal never clips it. */
+.suggest { list-style: none; margin: 0; padding: 0; border: 1px solid var(--hairline); border-radius: var(--r-lg); background: var(--canvas); overflow: hidden; }
+.suggest__item { display: flex; align-items: center; gap: var(--s-sm); padding: var(--s-xs) var(--s-sm); cursor: pointer; font-size: 14px; color: var(--ink); }
+.suggest__item + .suggest__item { border-top: 1px solid var(--hairline); }
+.suggest__item:hover, .suggest__item[aria-selected="true"] { background: var(--mint-100); }
+.suggest__item span { display: grid; min-width: 0; }
+.suggest__item strong { font-weight: 500; }
+.suggest__item small { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .group-fixed { display: flex; align-items: center; gap: var(--s-xs); padding: var(--s-xs) 0; color: var(--ink); }
 .group-fixed .icon-circle { width: 28px; height: 28px; font-size: 13px; }
 .tabs { display: flex; flex-wrap: wrap; gap: var(--s-xxs); margin-bottom: var(--s-xs); }

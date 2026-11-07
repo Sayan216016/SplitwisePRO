@@ -1,6 +1,7 @@
 import { openModal, closeModal } from "./modal.js";
 import { escapeHtml, isEmail, memberList } from "../utils/helpers.js";
 import { computeSplit, toPaise, formatINR, sum } from "../utils/money.js";
+import { avatar } from "./layout.js";
 
 const SPLIT_TYPES = { equal: "Equally", exact: "Exact ₹", percent: "Percent", shares: "Shares" };
 
@@ -84,10 +85,11 @@ export function openGroupModal({ group, selfEmail, findUser, contacts = [], onSa
     <div class="field">
       <label class="field__label" for="member-email">Add people by email</label>
       <div class="input-row">
-        <input class="input" id="member-email" name="email" type="email" placeholder="Name or email" autocomplete="off" list="member-suggestions">
+        <input class="input" id="member-email" name="email" type="text" inputmode="email" placeholder="Name or email" autocomplete="off"
+          role="combobox" aria-autocomplete="list" aria-controls="member-suggest" aria-expanded="false">
         <button class="btn btn--outline" type="button" data-find>Add</button>
       </div>
-      <datalist id="member-suggestions"></datalist>
+      <ul class="suggest" id="member-suggest" role="listbox" aria-label="People you know" hidden></ul>
       <p class="field__hint" data-find-msg aria-live="polite"></p>
     </div>
     <ul class="chip-list" data-picked></ul>
@@ -108,9 +110,29 @@ export function openGroupModal({ group, selfEmail, findUser, contacts = [], onSa
     $("[data-picked]").innerHTML = picked.map((p, i) => `<li class="chip">
       ${escapeHtml(p.name || p.email)}${p.uid ? "" : ` <em>· invite pending</em>`}
       <button type="button" data-remove="${i}" aria-label="Remove ${escapeHtml(p.email)}">✕</button></li>`).join("");
+  };
+
+  // Contacts are already in memory (from the groups listener), so filtering per keystroke costs no reads.
+  const list = $("#member-suggest");
+  let matches = [];
+  let active = -1;
+  const suggest = () => {
+    const q = emailInput.value.trim().toLowerCase();
     const t = taken();
-    $("#member-suggestions").innerHTML = contacts.filter((c) => !t.has(c.email))
-      .map((c) => `<option value="${escapeHtml(c.email)}">${escapeHtml(c.name)}</option>`).join("");
+    matches = !q ? [] : contacts.filter((c) => !t.has(c.email)
+      && ((c.name || "").toLowerCase().includes(q) || c.email.includes(q))).slice(0, 5);
+    active = Math.min(active, matches.length - 1);
+    list.innerHTML = matches.map((c, i) => `<li class="suggest__item" role="option" id="suggest-${i}" data-pick="${i}" aria-selected="${i === active}">
+      ${avatar(c, "avatar--sm")}<span><strong>${escapeHtml(c.name || c.email)}</strong><small>${escapeHtml(c.email)}</small></span></li>`).join("");
+    list.hidden = !matches.length;
+    emailInput.setAttribute("aria-expanded", String(!!matches.length));
+    if (active >= 0) emailInput.setAttribute("aria-activedescendant", `suggest-${active}`);
+    else emailInput.removeAttribute("aria-activedescendant");
+  };
+  const pick = (i) => {
+    emailInput.value = matches[i].email;
+    active = -1;
+    add();
   };
 
   async function add() {
@@ -125,21 +147,38 @@ export function openGroupModal({ group, selfEmail, findUser, contacts = [], onSa
       msg.textContent = u ? `Added ${u.displayName}` : "Not signed up yet — they'll join automatically when they sign in with this email.";
       emailInput.value = "";
       draw();
+      suggest();
     } catch (err) {
       msg.textContent = err.message;
     }
   }
 
-  draw();
   $("[data-find]").addEventListener("click", add);
-  // Picking a suggestion fills in a known contact's email — add it straight away.
   emailInput.addEventListener("input", () => {
-    if (contacts.some((c) => c.email === emailInput.value.trim().toLowerCase())) add();
+    active = -1;
+    suggest();
+  });
+  emailInput.addEventListener("blur", () => (list.hidden = true));
+  emailInput.addEventListener("focus", suggest);
+  // mousedown keeps focus in the input, so blur doesn't hide the list before the click lands.
+  list.addEventListener("mousedown", (e) => e.preventDefault());
+  list.addEventListener("click", (e) => {
+    const i = e.target.closest("[data-pick]")?.dataset.pick;
+    if (i != null) pick(Number(i));
   });
   emailInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
+    const open = !list.hidden;
+    if (open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
       e.preventDefault();
-      add();
+      active = (active + (e.key === "ArrowDown" ? 1 : -1) + matches.length) % matches.length;
+      suggest();
+    } else if (open && e.key === "Escape") {
+      e.stopPropagation();
+      list.hidden = true;
+      emailInput.setAttribute("aria-expanded", "false");
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      open && active >= 0 ? pick(active) : add();
     }
   });
   $("[data-picked]").addEventListener("click", (e) => {
